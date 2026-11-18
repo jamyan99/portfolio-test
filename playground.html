@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta name="robots" content="noindex, nofollow">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050B18">
+  <meta name="description" content="Explore Jamiyan Batnyam’s interactive celestial studio and character playground.">
+  <link rel="canonical" href="https://jamiyanbatnyam.com/playground.html">
+  <title>Playground — Jamiyan Batnyam</title>
+  <link rel="stylesheet" href="prototypes/hero-lab/7-character.css?v=celestial1">
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+<script>document.documentElement.classList.add('js');</script>
+<style>:root { --site-header-h: 84px; }
+html { scroll-padding-top: var(--site-header-h); }
+
+.site-header {
+  --nav-paper: #F8F7F4; --nav-ink: #111216; --nav-muted: #656B7C; --nav-link: #51586C;
+  --nav-line: #DEDFE2; --nav-accent: #F3480B; --nav-accent-text: #C53606;
+  --nav-ease: cubic-bezier(.22, 1, .36, 1);
+  position: fixed; inset: 0 0 auto; z-index: 40;
+  /* content sits in the site's one container, 1192px wide with 24px gutters:
+     the same as the case studies, gallery, 404, footers and home page */
+  height: var(--site-header-h); padding: 0 max(24px, calc((100% - 1192px) / 2));
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid transparent;
+  color: var(--nav-ink); font: 400 16px/1.7 "Manrope", "Segoe UI", sans-serif;
+  letter-spacing: normal; text-transform: none; -webkit-font-smoothing: antialiased;
+}
+.site-header--solid, .site-header[data-scrolled="true"], html:not(.js) .site-header {
+  background: var(--nav-paper); border-bottom-color: var(--nav-line);
+}
+/* keeps the page clear of the fixed header where no hero sits under it */
+.site-header__spacer { height: var(--site-header-h); }
+.skip-link:focus { z-index: 100; }
+
+.site-header a { color: inherit; text-decoration: none; }
+.site-header :focus-visible { outline: 2px solid var(--nav-accent); outline-offset: 6px; }
+.wordmark:focus-visible, .main-nav a:not(.nav-contact):focus-visible { border-radius: 0; }
+.site-header svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.wordmark { display: flex; align-items: center; gap: 15px; flex-shrink: 0; font-size: 13px; font-weight: 600; line-height: 1.25; }
+.monogram { font: 700 38px/1 "Bricolage Grotesque", Arial, sans-serif; letter-spacing: -0.1em; padding-right: .1em; }
+.monogram span { color: var(--nav-accent); }
+.wordmark__copy { display: grid; gap: 3px; }
+.wordmark__copy strong { color: var(--nav-ink); font-size: 14px; font-weight: 700; letter-spacing: -0.035em; }
+.wordmark__copy small { color: var(--nav-muted); font-size: 12px; font-weight: 500; }
+
+.main-nav {
+  display: flex; align-items: center; gap: clamp(18px, 3vw, 48px);
+  margin-left: auto;
+  font-size: 14px; font-weight: 500;
+}
+.main-nav a { position: relative; padding: 12px 0; color: var(--nav-link); }
+.main-nav a:hover, .main-nav a[aria-current] { color: var(--nav-ink); }
+/* the current page (on a case study, Work) and the hovered link get a dot */
+.main-nav a::after {
+  content: ""; position: absolute; bottom: 1px; left: 50%;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--nav-accent);
+  transform: translateX(-50%) scale(0);
+}
+.main-nav a:hover::after, .main-nav a[aria-current]::after { transform: translateX(-50%) scale(1); }
+.main-nav .nav-contact {
+  display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 20px;
+  border: 1px solid rgba(17, 18, 22, .12); border-radius: 999px;
+  background: var(--nav-ink); color: #fff;
+}
+.main-nav .nav-contact:hover { background: var(--nav-accent-text); border-color: var(--nav-accent-text); color: #fff; }
+.main-nav .nav-contact::after { content: none; }
+
+.menu-toggle { display: none; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+/* beats the display:grid below, so the script-only button stays hidden without JS */
+.menu-toggle[hidden] { display: none !important; }
+.menu-toggle .icon-close, .menu-toggle[aria-expanded="true"] .icon-open { display: none; }
+.menu-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+@media (max-width: 1100px) {
+  .main-nav { gap: clamp(15px, 2vw, 25px); font-size: 13px; }
+  .main-nav .nav-contact { min-height: 42px; gap: 8px; padding-inline: 14px; }
+}
+@media (max-width: 760px) {
+  .js .menu-toggle {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    border: 1px solid rgba(17, 18, 22, .15); border-radius: 50%; background: rgba(248, 247, 244, .75);
+  }
+  .js .main-nav {
+    position: absolute; top: calc(100% - 1px); right: 12px; left: 12px;
+    display: none; flex-direction: column; align-items: stretch; gap: 0;
+    margin: 0; padding: 10px 22px 18px;
+    border: 1px solid rgba(17, 18, 22, .09); border-radius: 0 0 16px 16px;
+    background: rgba(248, 247, 244, .98); box-shadow: 0 18px 40px rgba(17, 18, 22, .1);
+  }
+  .js .main-nav.open { display: flex; }
+  .js .main-nav a { min-height: 46px; padding: 12px 0; font-size: 15px; }
+  .js .main-nav a::after { bottom: 8px; left: auto; right: 0; }
+  .js .main-nav .nav-contact { justify-content: center; margin-top: 9px; padding-inline: 18px; }
+}
+@media (max-width: 760px) {
+  :root { --site-header-h: 72px; }
+  .wordmark { gap: 11px; font-size: 11px; }
+  .monogram { font-size: 33px; }
+  .wordmark__copy strong { font-size: 12px; }
+  .wordmark__copy small { font-size: 10px; }
+  /* without script the links simply wrap under the wordmark */
+  html:not(.js) .site-header { position: static; height: auto; flex-wrap: wrap; gap: 6px 16px; padding-block: 16px; }
+  html:not(.js) .main-nav { flex-wrap: wrap; width: 100%; margin: 0; gap: 0 18px; }
+  html:not(.js) .site-header__spacer { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Two speeds, one curve: 160ms answers the pointer, 240ms is for things changing state. */
+  .site-header { transition: background-color 240ms var(--nav-ease), border-color 240ms var(--nav-ease); }
+  .main-nav a { transition: color 160ms var(--nav-ease); }
+  .main-nav a::after { transition: transform 160ms var(--nav-ease); }
+  .main-nav .nav-contact { transition: background-color 160ms var(--nav-ease), border-color 160ms var(--nav-ease); }
+  @media (max-width: 760px) {
+    .js .main-nav.open { animation: nav-menu-enter 240ms var(--nav-ease) both; }
+  }
+  @keyframes nav-menu-enter { from { opacity: 0; transform: translateY(-8px); } }
+}
+
+/* Moving between pages. The page cross-fades instead of flashing, and the
+   header is a layer of its own, so it holds still while the page changes
+   under it. Typed (page-nav) so a page's own same-page transitions, like the
+   Vibe Coding simulator's, keep their rules. Reduce motion skips it; browsers
+   without cross-document view transitions simply navigate. */
+@view-transition { navigation: auto; types: page-nav; }
+.site-header { view-transition-name: site-header; }
+html:active-view-transition-type(page-nav)::view-transition-old(root) { animation: 240ms cubic-bezier(.4, 0, .2, 1) both page-out; mix-blend-mode: plus-lighter; }
+html:active-view-transition-type(page-nav)::view-transition-new(root) { animation: 240ms cubic-bezier(.4, 0, .2, 1) both page-in; mix-blend-mode: plus-lighter; }
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; } }
+html.motion-off::view-transition-group(*),
+html.motion-off::view-transition-old(*),
+html.motion-off::view-transition-new(*) { animation: none !important; }
+</style>
+<link rel="stylesheet" href="assets/celestial.css">
+<style>
+ .celestial-playground .site-header {margin:0;position:fixed;}
+ .celestial-playground main {padding-top:var(--site-header-h);}
+ .celestial-playground .hero {height:calc(100svh - var(--site-header-h));}
+ .celestial-playground {--orange:#A0E6D9;}
+ :root[data-theme=light] .celestial-playground {--paper:#E4E9ED;--bg:#E4E9ED;--ink:#17263C;--muted:#52657A;--line:#AEBFC9;--surface:#F0F5F7;--orange:#387A77;color:#17263C;}
+ .celestial-playground .site-header {background:#081322;}
+ .celestial-playground .skip-link {position:fixed;z-index:100;left:12px;top:12px;padding:12px 20px;transform:translateY(-200%);}
+ .celestial-playground .skip-link:focus {transform:none;}
+ @media(max-width:700px) {.celestial-playground .hero {height:auto;min-height:calc(100svh - var(--site-header-h));}}
+ </style>
+</head>
+<body id="top" class="celestial-site celestial-playground">
+<a class="skip-link" href="#main">Skip to playground</a>
+  <header class="site-header" data-scrolled="false">
+  <a class="wordmark" href="index.html" aria-label="Jamiyan Batnyam, home">
+    <span class="monogram" aria-hidden="true">JB<span>·</span></span>
+    <span class="wordmark__copy">
+      <strong>Jamiyan Batnyam</strong>
+      <small>UX / Product Designer</small>
+    </span>
+  </a>
+  <nav class="main-nav" id="main-nav" aria-label="Main">
+    <a href="index.html#home">Home</a>
+    <a href="index.html#projects">Work</a>
+    <a href="about.html">About</a>
+    <a href="Jamiyan_Batnyam_Resume.pdf" target="_blank" rel="noopener">Résumé</a>
+    <a href="visual.html">Gallery</a>
+    <a href="playground.html" aria-current="page">Playground</a>
+    <a href="index.html#contact">Contact</a>
+    <a class="nav-contact" href="mailto:jamyanart@gmail.com">Let’s connect <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></a>
+  </nav>
+  <button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu" hidden>
+    <svg class="icon-open" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+    <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+  </button>
+</header>
+<script>
+/* Global header, the same on every page: solid once the page leaves the top,
+   and the phone menu. */
+(function () {
+  "use strict";
+  var header = document.querySelector(".site-header");
+  if (!header) return;
+
+  var frame = 0;
+  var paint = function () {
+    frame = 0;
+    header.setAttribute("data-scrolled", window.scrollY > 40 ? "true" : "false");
+  };
+  window.addEventListener("scroll", function () {
+    if (!frame) frame = window.requestAnimationFrame(paint);
+  }, { passive: true });
+  paint();
+
+  var toggle = document.getElementById("menu-toggle");
+  var nav = document.getElementById("main-nav");
+  if (!toggle || !nav) return;
+  toggle.hidden = false;
+  var isOpen = function () { return nav.classList.contains("open"); };
+  var setMenu = function (open, returnFocus) {
+    nav.classList.toggle("open", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    if (open) {
+      var first = nav.querySelector("a");
+      if (first) first.focus({ preventScroll: true });
+    } else if (returnFocus) {
+      toggle.focus();
+    }
+  };
+  toggle.addEventListener("click", function () { setMenu(!isOpen()); });
+  nav.addEventListener("click", function (e) { if (isOpen() && e.target.closest("a")) setMenu(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen()) setMenu(false, true); });
+  document.addEventListener("pointerdown", function (e) { if (isOpen() && !header.contains(e.target)) setMenu(false); });
+  header.addEventListener("focusout", function (e) {
+    if (isOpen() && e.relatedTarget && !header.contains(e.relatedTarget)) setMenu(false);
+  });
+}());
+</script>
+
+
+  <main id="main">
+    <section class="hero" id="hero" aria-labelledby="hero-title" aria-describedby="control-hint" tabindex="-1">
+      <div class="hero-copy">
+        <p class="eyebrow">UX / Product Designer · Playground</p>
+        <h1 id="hero-title">Room to<br><em>explore.</em></h1>
+        <p class="intro">An interactive corner of my portfolio. Explore the studio, try a move, and follow your curiosity.</p>
+        <div class="hero-links"><a class="primary" href="index.html">Back to the stars <span aria-hidden="true">↗</span></a><a class="resume" href="Jamiyan_Batnyam_Resume.pdf" target="_blank" rel="noopener">Résumé <span aria-hidden="true">↗</span></a></div>
+      </div>
+      <div class="stage" id="stage">
+        <img class="poster" id="poster" src="assets/img/hero-poster.webp" width="1920" height="1080" fetchpriority="high" alt="Jamiyan in the approved warm white basketball studio">
+        <button id="play" class="play" type="button" aria-label="Play interactive scene"><span aria-hidden="true">▶</span> Play</button>
+        <button id="character-hit" class="scene-hit character-hit" type="button" aria-label="Take a play break" hidden></button>
+        <button id="ball-hit" class="scene-hit ball-hit" type="button" aria-label="Drag to aim a shot, or press Space to shoot" hidden></button>
+        <button id="laptop-hit" class="scene-hit laptop-hit" type="button" aria-label="Show the next real project on the laptop" hidden></button>
+        <button id="lamp-hit" class="scene-hit lamp-hit" type="button" role="switch" aria-checked="true" aria-label="Switch whole page to light mode" hidden><svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6m-5 3h4M8 14c-4-5-1-11 4-11s8 6 4 11l-1 2H9z"/></svg></button>
+        <div class="stage-note" id="stage-note">Interactive playground</div>
+        <div class="stage-status" id="status" role="status" aria-live="polite">Preparing the playground</div>
+        <div class="play-controls" id="controls" hidden>
+          <div class="moves" role="group" aria-label="Scene controls">
+            <button type="button" id="take-break">Take a break <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h13m-5-5 5 5-5 5"/></svg></button>
+            <div id="court-moves" class="court-moves" role="group" aria-label="Playground actions" hidden>
+              <button type="button" data-action="Dribble" aria-keyshortcuts="E">Dribble</button>
+              <button type="button" data-action="Ball_Spin" aria-keyshortcuts="Q">Spin</button>
+              <button type="button" data-action="Jump_Shot" aria-keyshortcuts="Space">Shoot <svg width="15" height="15" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 15 15 4M5 4h10v10"/></svg></button>
+              <button type="button" id="return-desk" class="icon-control" aria-label="Return to the desk"><svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true"><path d="m8 4-5 5 5 5M4 9h8a4 4 0 0 1 0 8"/></svg></button>
+            </div>
+            <button type="button" id="pause" class="pause" aria-label="Pause scene" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4v12M13 4v12"/></svg></button>
+          </div>
+          <p class="control-hint" id="control-hint">WASD/arrows run · tap floor · E/Q/Space · Shift+arrows aim</p>
+        </div>
+        <div class="direction-pad" id="direction-pad" role="group" aria-label="Move the character" aria-describedby="control-hint" hidden>
+          <button type="button" data-move="ArrowUp" aria-label="Move forward" aria-keyshortcuts="W ArrowUp" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4m-5 5 5-5 5 5"/></svg></button>
+          <button type="button" data-move="ArrowLeft" aria-label="Move left" aria-keyshortcuts="A ArrowLeft" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4m5 5-5-5 5-5"/></svg></button>
+          <button type="button" data-move="ArrowDown" aria-label="Move back" aria-keyshortcuts="S ArrowDown" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12m-5-5 5 5 5-5"/></svg></button>
+          <button type="button" data-move="ArrowRight" aria-label="Move right" aria-keyshortcuts="D ArrowRight" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg></button>
+        </div>
+        <div class="aim-indicator" id="aim-indicator" hidden aria-hidden="true"><i></i></div>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import { mountPlaygroundSky } from './prototypes/hero-lab/7-celestial.js?v=1';
+    mountPlaygroundSky();
+    const play = document.querySelector('#play');
+    let pending, mounted, fallback;
+    async function boot(explicit = false) {
+      if (mounted) { mounted.play?.(); return; }
+      if (!pending) pending = import('./prototypes/hero-lab/7-character.js?v=celestial3').then(m => m.mount({explicit})).then(result => { mounted = result; return result; }).catch(error => {
+        console.error('Playground load:', error);
+        document.querySelector('#status').textContent = '3D unavailable · Play opens the original video';
+        play.hidden = false;
+        fallback = true;
+      });
+      await pending;
+      if (fallback && explicit) {
+        const video = document.createElement('video');
+        video.src = 'assets/video/hero-loop.mp4'; video.poster = 'assets/img/hero-poster.webp';
+        video.muted = true; video.playsInline = true; video.controls = true; video.loop = true; video.className = 'fallback-video';
+        document.querySelector('#stage').append(video);
+        play.hidden = true; await video.play().catch(() => { play.hidden = false; });
+        document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); });
+        new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) video.pause(); }).observe(video);
+      }
+    }
+    play.addEventListener('click', () => boot(true));
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      requestAnimationFrame(() => setTimeout(() => boot(false), 100));
+    } else document.querySelector('#status').textContent = 'Motion is off · Play to explore';
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+/* SoundCloud findings, shared by the case study (projects/soundcloud.html) and the frozen lake's
+   SoundCloud room. Each finding is a small stage: the SoundCloud app next to our redesign, with
+   what matters ringed in SoundCloud orange and, on one phone, shown again larger in a lens.
+   Ring and lens positions are fractions of the screen image (measured on a 1% grid), so they stay
+   on target at any size. */
+.scx-stage {
+  --scx-hi: #FF5500;
+  --scx-hi-soft: rgba(255, 85, 0, .2);
+  --pw: 228px;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+  gap: 28px 56px; margin: 0; padding: 40px 24px 32px; border-radius: 24px;
+  background: radial-gradient(90% 70% at 50% 0%, rgba(255, 85, 0, .06), transparent 65%), #081321;
+  box-shadow: inset 0 0 0 1px rgba(210, 235, 255, .12);
+}
+.scx-stage--3 { --pw: 188px; gap: 28px 40px; }
+
+/* One phone: its tag, the screen, and a line under it. A phone with a lens keeps room for it. */
+.scx-ph { margin: 0; width: var(--pw); display: flex; flex-direction: column; align-items: center; }
+.scx-ph--lens { margin-right: calc(var(--pw) * (var(--mw) - 10) / 100); }
+.scx-ph--lens-left { margin-left: calc(var(--pw) * (var(--mw) + 6) / 100); }
+.scx-tag {
+  margin-bottom: 14px; padding: 5px 11px; border-radius: 999px;
+  font: 700 11px/1 var(--font-body, var(--body, "Manrope", sans-serif)); letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(238, 243, 248, .86); background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+
+.scx-frame {
+  position: relative; display: block; width: 100%; aspect-ratio: 804 / 1740;
+  padding: 0; border: 0; background: none; cursor: zoom-in;
+  border-radius: 9% / 4.15%; container-type: inline-size;
+}
+.scx-frame:focus-visible { outline: 2px solid var(--scx-hi); outline-offset: 8px; }
+.scx-frame > img {
+  display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
+  box-shadow: 0 0 0 1px rgba(210, 235, 255, .2), 0 0 0 5px #04080F, 0 0 0 6px rgba(210, 235, 255, .12), 0 22px 48px rgba(0, 0, 0, .5);
+}
+
+/* Rings: x, y, width and height as fractions of the screen. One colour, solid. */
+.scx-ring {
+  position: absolute; pointer-events: none;
+  left: calc(var(--x) * 100%); top: calc(var(--y) * 100%); width: calc(var(--w) * 100%); height: calc(var(--h) * 100%);
+  border: 2px solid var(--scx-hi); border-radius: 10px;
+  box-shadow: 0 0 0 3px var(--scx-hi-soft), 0 0 18px rgba(255, 85, 0, .45);
+}
+.scx-ring--pill { border-radius: 999px; }
+
+/* The lens: --mw, --mh its size (hundredths of the phone's width), --my its centre line, and
+   --cx, --cy, --z the point of the screen it shows and how far it zooms in. It sits on the
+   phone's right edge, or just left of the phone (clear of the ring it repeats). */
+.scx-lens {
+  position: absolute; pointer-events: none; overflow: hidden;
+  left: calc(100% - 10cqw); top: calc(var(--my) * 100% - var(--mh) * .5cqw);
+  width: calc(var(--mw) * 1cqw); height: calc(var(--mh) * 1cqw);
+  border-radius: 14px; border: 2px solid var(--scx-hi); background: #000;
+  box-shadow: 0 0 0 5px var(--scx-hi-soft), 0 18px 40px rgba(0, 0, 0, .55);
+}
+.scx-lens--round { border-radius: 50%; }
+.scx-lens--left { left: auto; right: calc(100% + 6cqw); }
+.scx-lens > img {
+  position: absolute; max-width: none; height: auto; width: calc(var(--z) * 100cqw);
+  left: calc(var(--mw) * .5cqw - var(--cx) * var(--z) * 100cqw);
+  top: calc(var(--mh) * .5cqw - var(--cy) * var(--z) * 216.4cqw);
+}
+
+.scx-label {
+  margin: 16px 0 0; max-width: calc(var(--pw) * 1.1);
+  font: 600 14px/1.4 var(--font-display, var(--display, "Bricolage Grotesque", sans-serif)); color: var(--ink, #EEF3F8); text-align: center;
+}
+
+@media (max-width: 760px) {
+  .scx-stage, .scx-stage--3 { --pw: 108px; gap: 22px 12px; padding: 24px 8px 22px; border-radius: 18px; }
+  .scx-tag { margin-bottom: 10px; padding: 4px 8px; font-size: 9.5px; }
+  .scx-label { margin-top: 12px; font-size: 11.5px; max-width: calc(var(--pw) * 1.3); }
+  .scx-ring { border-width: 1.5px; box-shadow: 0 0 0 2px var(--scx-hi-soft), 0 0 10px rgba(255, 85, 0, .4); }
+  .scx-lens { border-width: 1.5px; border-radius: 10px; }
+  .scx-lens--round { border-radius: 50%; }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .scx-frame { transition: transform 240ms cubic-bezier(.22, 1, .36, 1); }
+  .scx-frame:hover { transform: translateY(-3px); }
+}

@@ -1,0 +1,28 @@
+/* The frost crawler (crawler.js): the canvas it's drawn on, the button that lets it out, and the
+   hole a borrowed word leaves (the word's own text goes clear, so nothing moves). */
+.crawler-canvas {position:fixed;inset:0;z-index:80;pointer-events:none;opacity:0;transition:opacity var(--mo-mid,240ms) var(--mo-ease,cubic-bezier(.22,1,.36,1));}
+.crawler-canvas.is-on {opacity:1;}
+.crawler-hole {color:transparent !important;-webkit-text-fill-color:transparent;text-shadow:none !important;}
+
+.crawler-toggle {position:fixed;z-index:81;left:clamp(16px,3vw,28px);bottom:clamp(16px,3vw,28px);display:inline-flex;align-items:center;gap:10px;min-height:44px;
+  padding:0 18px 0 14px;border:1px solid rgba(158,240,214,.45);border-radius:999px;background:rgba(8,18,24,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#E9FFF7;font:600 13px/1 "Manrope","Segoe UI",sans-serif;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.35);transition:border-color var(--mo-fast,160ms) var(--mo-ease,cubic-bezier(.22,1,.36,1)),transform var(--mo-fast,160ms) var(--mo-ease,cubic-bezier(.22,1,.36,1));}
+.crawler-toggle:hover {border-color:rgba(158,240,214,.85);transform:translateY(-1px);}
+.crawler-toggle:focus-visible {outline:2px solid #9EF0D6;outline-offset:3px;}
+/* A tiny three-plate crawler for an icon; it wiggles while one is out. */
+.crawler-toggle__glyph {display:inline-flex;gap:2px;}
+.crawler-toggle__glyph i {width:6px;height:8px;border:1.2px solid #9EF0D6;border-radius:2px;background:rgba(158,240,214,.18);}
+.crawler-toggle__glyph i:first-child {width:8px;border-radius:3px;}
+.crawler-toggle[aria-pressed="true"] .crawler-toggle__glyph i {animation:crawler-wiggle .9s ease-in-out infinite;}
+.crawler-toggle[aria-pressed="true"] .crawler-toggle__glyph i:nth-child(2) {animation-delay:-.3s;}
+.crawler-toggle[aria-pressed="true"] .crawler-toggle__glyph i:nth-child(3) {animation-delay:-.6s;}
+@keyframes crawler-wiggle {50% {translate:0 -2px;}}
+.crawler-sr {position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+/* Phones: just the icon (its name stays for screen readers), clear of the scene's own controls. */
+@media (max-width:560px) {
+  .crawler-toggle {width:48px;min-height:48px;padding:0;justify-content:center;}
+  .crawler-toggle__text {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .crawler-toggle[aria-pressed="true"] .crawler-toggle__glyph i {animation:none;}
+}

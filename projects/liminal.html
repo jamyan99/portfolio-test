@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="theme-color" content="#050B18">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Liminal — Jamiyan Batnyam</title>
+<meta name="description" content="Liminal: a wellness app that helps people with anxiety and depression get unstuck. UX case study, student team project, 2025.">
+<link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="canonical" href="https://jamiyanbatnyam.com/projects/liminal.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jamiyan Batnyam">
+<meta property="og:title" content="Liminal — Jamiyan Batnyam">
+<meta property="og:description" content="Liminal: a wellness app that helps people with anxiety and depression get unstuck. UX case study, student team project, 2025.">
+<meta property="og:url" content="https://jamiyanbatnyam.com/projects/liminal.html">
+<meta property="og:image" content="https://jamiyanbatnyam.com/assets/img/og/liminal.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Three lavender phones showing Liminal's SubLab, Home and Journal screens.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@500,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="../assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+/* Before anything renders: mark script support, and apply the OS Reduce
+   motion setting so no animation or page transition starts first. */
+(function (root) {
+  root.classList.add("js");
+  // Clear the choice the old footer toggle used to save; the OS setting rules now.
+  try { localStorage.removeItem("reduceMotion"); } catch (e) {}
+  try { if (matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("motion-off"); } catch (e) {}
+}(document.documentElement));
+</script>
+<!-- Chromium: start loading a page as soon as its link is hovered, so the click is instant -->
+<script type="speculationrules">
+{ "prerender": [{ "where": { "href_matches": "/*" }, "eagerness": "moderate" }] }
+</script>
+<style>
+
+/* ==========================================================================
+   Tokens
+   Themed with Liminal v3 (Figma "00 — Design System", 3592:1912): soft,
+   warm, slightly whimsical; light lavender canvas, never clinical. Figtree
+   throughout the case study; site chrome (top nav, footer) keeps Satoshi +
+   Inter to match the rest of the portfolio. Media frames float on the
+   lavender-tinted elevation instead of an outline.
+   ========================================================================== */
+:root {
+  --bg: #F5F3FA;            /* bg/canvas */
+  --surface: #FFFFFF;       /* bg/card */
+  --surface-sunk: #EDE9F7;  /* bg/sunken */
+  --ink: #241B4A;           /* text/primary, 14.3:1 on canvas */
+  --ink-dim: #5B5387;       /* text/muted, 6.3:1 on canvas */
+  --line: #E3DEF3;          /* border/default */
+
+  /* Liminal v3 palette. Old names kept so every rule below re-themes. */
+  --periwinkle: #CEBCFC;    /* accent/primary-soft */
+  --violet: #6256BA;        /* accent/primary, 5.4:1 on canvas */
+  --indigo: #4A3F94;        /* accent/primary-strong */
+  --slate-lav: #8F87B3;
+  --blush: #EDE9F7;         /* bg/sunken */
+  --tile: #F3EFFE;          /* bg/tile */
+  --accent-soft: #E5DDFC;
+  --sky: #3D92D6;  --sky-soft: #D2E9FC;
+  --mint: #32A37B; --mint-soft: #CDF3E5;
+  --brand-purple: #6256BA;
+
+  /* Test-result semantics: kept as data colours, not brand, and darkened
+     enough that the text beside each dot passes AA. */
+  --res-pass: #2E7D32;
+  --res-pass-fill: #43A047;
+  --res-confuse: #8A6A00;
+  --res-confuse-fill: #D9B23A;
+  --res-fail: #C62828;
+  --res-fail-fill: #E03B3B;
+
+  /* v3 elevation scale: lavender-tinted, never neutral grey */
+  --elev-card: 0 2px 8px rgba(74, 56, 135, 0.06);
+  --elev-raised: 0 6px 18px rgba(74, 56, 135, 0.08);
+  --elev-floating: 0 12px 32px rgba(74, 56, 135, 0.12);
+  --frame: var(--elev-floating);
+
+  /* the soft lavender wash behind the hero and the screens */
+  --wash: radial-gradient(120% 90% at 50% 20%, #F5F1FF 0%, var(--accent-soft) 55%, var(--periwinkle) 100%);
+
+  --font-display: "Figtree", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-chrome-display: "Satoshi", "Inter", system-ui, sans-serif;
+  --font-chrome-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius: 24px;
+  --radius-sm: 16px;
+
+  /* spacing scale */
+  --space-2xs: 8px;
+  --space-xs: 12px;
+  --space-s: 16px;
+  --space-m: 24px;
+  --space-l: 40px;
+  --space-xl: 64px;
+  --space-2xl: 112px;
+
+  /* rhythm */
+  --gap-section: var(--space-2xl);  /* between Tier 2 sections   */
+  --gap-block: var(--space-xl);     /* between Tier 3 blocks      */
+  --card-pad: var(--space-l);       /* inside every white card    */
+
+  /* type scale — Tier 2 is 1.8x Tier 3 and a heavier weight */
+  --h1: 44px;
+  --t2: 36px;
+  --t3: 20px;
+  --t1: 14px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --gap-section: 72px;
+    --gap-block: 48px;
+    --card-pad: var(--space-m);
+    --h1: 34px;
+    --t2: 28px;   /* 1.56x Tier 3 */
+    --t3: 18px;
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+img, video { display: block; max-width: 100%; }
+h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--brand-purple); outline-offset: 3px; border-radius: 4px; }
+strong { font-weight: 600; color: var(--ink); }
+
+/* site chrome stays in the portfolio's own type */
+.skip-link, .site-footer { font-family: var(--font-chrome-body); }
+
+.skip-link {
+  position: absolute; left: 16px; top: -48px;
+  background: var(--ink); color: #fff; padding: 10px 14px; border-radius: 8px;
+  font-size: 14px; text-decoration: none; z-index: 20;
+}
+.skip-link:focus { top: 12px; }
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+.layout {
+  max-width: 1240px; margin: 0 auto; padding: 40px 24px 0;
+  display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 56px;
+}
+.content { min-width: 0; max-width: 960px; }
+
+.rail {
+  position: sticky; top: calc(var(--site-header-h) + 32px); align-self: start;
+  background: var(--surface); border-radius: var(--radius-sm); padding: 14px 16px 13px;
+}
+.rail__eyebrow {
+  margin: 0 0 14px; font: 500 9px/1 var(--font-body);
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim);
+}
+.rail__nav { display: flex; flex-direction: column; gap: 2px; }
+.rail a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 7px 0; font-size: 12px; line-height: 1.4;
+  color: var(--ink-dim); text-decoration: none;
+}
+.rail__num {
+  flex: none; font-size: 9px; letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums; color: var(--ink-dim); opacity: .65;
+}
+.rail a:hover { color: var(--ink); }
+.rail a:hover .rail__num { opacity: 1; }
+.rail a[aria-current="true"] { color: var(--brand-purple); font-weight: 700; }
+.rail a[aria-current="true"] .rail__num { color: var(--brand-purple); opacity: 1; }
+
+.rail__progress { margin-top: 20px; }
+/* beats the display:flex the mobile rule sets, so [hidden] still hides it */
+.rail__progress[hidden] { display: none; }
+.rail__bar { height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.rail__bar > span {
+  display: block; height: 100%; width: 100%;
+  background: var(--brand-purple); transform: scaleX(0); transform-origin: left;
+}
+.rail__meta {
+  margin: 8px 0 0; font: 500 9px/1.4 var(--font-body);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; gap: 0; padding-top: 0; }
+  .rail {
+    position: sticky; top: var(--site-header-h); z-index: 10;
+    /* Without this the grid item takes its min-content width from the nav,
+       and overflow-x on the nav does not reduce that contribution. */
+    min-width: 0;
+    margin: 0 -24px 32px; padding: 10px 24px 9px; border-radius: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rail__eyebrow { display: none; }
+  .rail__nav {
+    flex-direction: row; gap: 20px; overflow-x: auto; scrollbar-width: none;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail a { white-space: nowrap; padding: 0; min-height: 40px; gap: 7px; }
+  .rail__progress { margin-top: 7px; display: flex; align-items: center; gap: 12px; }
+  .rail__bar { flex: 1; }
+  .rail__meta { flex: none; margin: 0; }
+  /* clear the taller sticky rail when jumping to an anchor. !important: the
+     plain .section rule further down and the inline 72px on some sections
+     would otherwise win, and the heading would land under the strip. */
+  .section, .intro { scroll-margin-top: 104px !important; }
+}
+
+/* ==========================================================================
+   Type tiers
+   Tier 1 eyebrow · Tier 2 section heading · Tier 3 subheading
+   ========================================================================== */
+/* Tier 1 wears v3/Section: the uppercase label every group in the app opens with */
+.eyebrow { font: 600 var(--t1)/1.4 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand-purple); margin-bottom: var(--space-2xs); }
+.t2 { font: 700 var(--t2)/1.15 var(--font-display); letter-spacing: -0.015em; }
+.t3 { font: 600 var(--t3)/1.3 var(--font-display); letter-spacing: -0.005em; }
+.body { color: var(--ink-dim); max-width: 64ch; }
+.t3 + .body, .t3 + .body-group { margin-top: var(--space-xs); }
+.body + .body { margin-top: var(--space-s); }
+.section-head .body { margin-top: var(--space-m); }
+
+/* ==========================================================================
+   Rhythm: sections and blocks
+   ========================================================================== */
+.section { margin-top: var(--gap-section); scroll-margin-top: 72px; }
+.section-head + .block { margin-top: var(--space-l); }
+.block + .block,
+.rings + .block { margin-top: var(--gap-block); }
+.block > .t3 + .body + .media-row,
+.block > .t3 + .body + .card,
+.block > .t3 + .body + .ticker,
+.block > .t3 + .card,
+.block > .body + .card { margin-top: var(--space-m); }
+
+/* ==========================================================================
+   Surfaces
+   ========================================================================== */
+.card { background: var(--surface); border-radius: var(--radius); padding: var(--card-pad); }
+
+/* fit: contain media inside a sized box so it can never be clipped */
+.fit { position: relative; }
+.fit > img, .fit > video {
+  position: absolute; inset: var(--fit-pad, 24px);
+  width: calc(100% - 2 * var(--fit-pad, 24px));
+  height: calc(100% - 2 * var(--fit-pad, 24px));
+  object-fit: contain;
+}
+
+/* ==========================================================================
+   My contribution: what was the team's and what was mine
+   ========================================================================== */
+.contribution__list { margin: var(--space-xs) 0 0; padding-left: 20px; max-width: 64ch; color: var(--ink-dim); }
+.contribution__list li + li { margin-top: 6px; }
+
+/* ==========================================================================
+   Hero + header
+   ========================================================================== */
+.hero-media { border-radius: var(--radius); overflow: hidden; aspect-ratio: 7 / 4; background: var(--surface-sunk); }
+.hero-media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Hero: the v3 splash lockup (icon, wordmark, tagline), built live */
+.hero-brand {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(16px, 2.6vw, 28px); padding: var(--space-m); text-align: center;
+  background: var(--wash);
+}
+.hero-brand .hero-brand__icon {
+  width: clamp(72px, 13%, 128px); height: auto; aspect-ratio: 1;
+  border-radius: 23%; box-shadow: var(--elev-floating);
+}
+/* v3/Display, with the splash screen's open tracking on the lowercase wordmark */
+.hero-brand__name { font: 700 clamp(32px, 4.6vw, 48px)/1 var(--font-display); letter-spacing: 0.03em; color: var(--ink); }
+.hero-brand__tag { margin-top: 10px; font: 400 clamp(15px, 1.7vw, 18px)/1.45 var(--font-body); color: var(--ink-dim); }
+@media (max-width: 560px) { .hero-brand { aspect-ratio: 4 / 3; } }
+
+.case-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 32px;
+  margin-top: var(--space-xl);
+}
+.case-title { font: 700 var(--h1)/1.1 var(--font-display); letter-spacing: -0.02em; }
+.case-sub { margin-top: 6px; color: var(--ink-dim); font-size: 14px; }
+.facts { display: flex; gap: 56px; }
+.facts dt { font: 600 16px/1.3 var(--font-display); }
+.facts dd { margin-top: 4px; color: var(--ink-dim); font-size: 14px; }
+@media (max-width: 560px) {
+  .case-head { flex-direction: column; gap: 20px; }
+  .facts { gap: 40px; }
+}
+
+.intro { margin-top: var(--space-xl); }
+
+/* v3 screens are Figma exports at 2x (804 x 1748). The frame's 36px corner
+   radius is set as a percentage of each axis, so it scales with the image. */
+.shot {
+  display: block; width: 100%; height: auto; aspect-ratio: 402 / 874;
+  border-radius: 8.955% / 4.119%; background: var(--bg);
+}
+
+/* My Roles showcase: the v3 screens in three phone renders. The trio runs
+   full width; the floating pair and the flat lay share the row below. */
+.mockups {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-s);
+  margin-top: var(--space-xl);
+}
+.mockups img { width: 100%; height: auto; border-radius: var(--radius); background: var(--surface-sunk); }
+.mockups__wide { grid-column: 1 / -1; }
+@media (max-width: 560px) { .mockups { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   Two-column text + media
+   Rule: the first split in each Tier 2 section puts media on the right,
+   then splits alternate within that section.
+   ========================================================================== */
+.split {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: var(--space-xl); align-items: center;
+}
+.split--media-left { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+.split--media-left .split__media { order: -1; }
+@media (max-width: 760px) {
+  .split, .split--media-left { grid-template-columns: 1fr; gap: var(--space-m); }
+  .split--media-left .split__media { order: 0; }
+}
+
+/* the v3 floating elevation on every media frame, nowhere else */
+.hero-media, .mockups img, .statement { box-shadow: var(--frame); }
+
+/* Problem Space: the old poster's line, set live on the accent-soft panel */
+.statement {
+  margin: 0; padding: var(--space-l); border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.statement img { width: 64px; height: 64px; }
+.statement p {
+  margin-top: var(--space-m);
+  font: 700 30px/1.22 var(--font-display); letter-spacing: -0.015em; color: var(--ink);
+}
+@media (max-width: 760px) {
+  .statement { padding: var(--space-m); }
+  .statement img { width: 52px; height: 52px; }
+  .statement p { font-size: 24px; }
+}
+
+/* Final Delivery: each feature as its v3 flow, four screens in order.
+   Every screen opens full size in the viewer. */
+.flow {
+  list-style: none; margin: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-m);
+}
+.flow__open {
+  display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in;
+  border-radius: 8.955% / 4.119%;   /* the focus ring follows the screen's corners */
+}
+.flow__open .shot { box-shadow: 0 0 0 1px var(--line), var(--elev-raised); }
+.flow__cap { margin-top: var(--space-s); font: 600 15px/1.3 var(--font-display); color: var(--ink); }
+.flow__n {
+  display: block; margin-bottom: 6px;
+  font: 700 12px/1 var(--font-body); letter-spacing: 0.06em; color: var(--violet);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-l) var(--space-s); }
+  .flow__cap { margin-top: var(--space-xs); font-size: 14px; }
+}
+
+.evidence__open {
+  position: relative; display: block; width: 100%; aspect-ratio: 4 / 3;
+  padding: 0; border: 0; border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--tile); cursor: zoom-in;
+}
+.evidence__open img { width: 100%; height: 100%; object-fit: contain; }
+.evidence__chip {
+  position: absolute; right: 10px; bottom: 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 11px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95); color: var(--ink);
+  font: 500 13px/1 var(--font-body);
+  box-shadow: 0 2px 8px rgba(74, 56, 135, 0.14);
+}
+.evidence__chip svg { width: 14px; height: 14px; }
+.evidence__open:hover .evidence__chip { background: #fff; box-shadow: 0 4px 12px rgba(74, 56, 135, 0.18); }
+
+
+.text-button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 0;
+  background: none; border: 0; cursor: pointer;
+  font: 500 14px/1.2 var(--font-body); color: var(--ink-dim);
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #CFC9E2;
+}
+.text-button:hover { color: var(--ink); text-decoration-color: currentColor; }
+.text-button svg { width: 14px; height: 14px; flex: none; }
+
+
+/* ==========================================================================
+   Full-size viewer
+   ========================================================================== */
+.lightbox {
+  width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh;
+  margin: 0; padding: 0; border: 0; background: transparent;
+}
+.lightbox::backdrop { background: rgba(36, 27, 74, 0.9); }
+.lightbox__stage {
+  width: 100%; height: 100%; display: grid; place-items: center; padding: 64px 20px 24px;
+  /* a definite cell, so the image's max-height: 100% resolves and tall screens fit */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+}
+.lightbox__stage img { max-width: min(1600px, 100%); max-height: 100%; object-fit: contain; border-radius: 8px; background: #fff; }
+/* a v3 screen keeps its own corner radius in the viewer */
+.lightbox__stage img.is-shot { border-radius: 8.955% / 4.119%; background: var(--bg); }
+.lightbox__close {
+  position: fixed; top: 16px; right: 16px;
+  padding: 10px 16px; border: 0; border-radius: 999px; cursor: pointer;
+  background: #fff; color: var(--ink); font: 500 14px/1 var(--font-body);
+}
+
+
+/* ==========================================================================
+   Liminal: research statistics
+   The four counts were a flattened image with a red rule that fought the
+   brand. Rebuilt as live text; the original card stays alongside as evidence.
+   ========================================================================== */
+.stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: var(--space-l); align-items: center; }
+@media (max-width: 760px) { .stats { grid-template-columns: 1fr; gap: var(--space-m); } }
+
+.stats__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.stat { background: var(--blush); padding: var(--space-m) var(--space-s); text-align: center; }
+.stat:nth-child(2), .stat:nth-child(3) { background: var(--tile); }
+.stat__num { font: 700 40px/1 var(--font-display); letter-spacing: -0.02em; color: var(--indigo); }
+.stat__label { margin-top: 6px; font: 500 14px/1.3 var(--font-body); color: var(--ink-dim); }
+@media (max-width: 760px) { .stat__num { font-size: 32px; } .stat__label { font-size: 13px; } }
+
+/* ==========================================================================
+   Liminal: 189 data points
+   Was an image of a grid of unreadable notes. Rebuilt so the count itself
+   is the graphic; the original stays one click away.
+   ========================================================================== */
+.datapoints { position: relative; }
+.datapoints__grid {
+  display: grid; grid-template-columns: repeat(21, minmax(0, 1fr));
+  gap: 4px; padding: 2px;
+}
+.datapoints__grid span { display: block; aspect-ratio: 3 / 4; border-radius: 2px; background: var(--periwinkle); opacity: 0.55; }
+.datapoints__count {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  padding: 14px 26px; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  font: 700 clamp(16px, 4.2vw, 40px)/1 var(--font-display); letter-spacing: -0.02em; color: var(--ink);
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(74, 56, 135, 0.14);
+}
+.datapoints__foot { margin-top: var(--space-m); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; }
+.datapoints__foot .caption { margin: 0; }
+@media (max-width: 760px) {
+  .datapoints__grid { grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; }
+  .datapoints__count { padding: 10px 16px; }
+}
+
+/* ==========================================================================
+   Liminal: interview findings
+   Each finding pairs its own illustration with the statement. The art is a
+   full 3D scene with its own backdrop, so it fills the tile edge to edge.
+   ========================================================================== */
+.findings {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-m);
+  margin-top: var(--space-l); padding: 0; list-style: none;
+}
+.finding__art {
+  position: relative; aspect-ratio: 1; border-radius: var(--radius-sm);
+  background: var(--tile); overflow: hidden;   /* shows while the image loads */
+}
+.finding__art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.finding__text { margin-top: var(--space-s); padding-top: var(--space-s); border-top: 1px solid var(--line); }
+.finding__n { font: 700 13px/1 var(--font-body); color: var(--violet); letter-spacing: 0.02em; }
+.finding__text p { margin-top: 10px; font: 600 19px/1.3 var(--font-display); letter-spacing: -0.01em; text-wrap: balance; }
+@media (max-width: 960px) {
+  .findings { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-l); }
+}
+@media (max-width: 520px) {
+  .findings { gap: var(--space-l) var(--space-s); margin-top: var(--space-m); }
+  .finding__art { border-radius: 12px; }
+  .finding__text { margin-top: var(--space-xs); padding-top: var(--space-xs); }
+  .finding__text p { margin-top: 6px; font-size: 15px; }
+}
+
+/* ==========================================================================
+   Liminal: feature cards (SubLab, Meditation, Journal, Community)
+   Four stock illustrations in four unrelated styles, so each gets the same
+   tinted square frame; Definition and How It Works are visibly different.
+   ========================================================================== */
+.feature { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--space-l); align-items: start; }
+.feature + .feature { margin-top: var(--space-m); }
+.feature__art {
+  aspect-ratio: 1; border-radius: var(--radius-sm); background: var(--tile);
+  display: grid; place-items: center; padding: 14px; overflow: hidden;   /* keeps it square: tall art must not stretch the box */
+}
+.feature__art { position: relative; }
+.feature__art img { position: absolute; inset: 14px; width: calc(100% - 28px); height: calc(100% - 28px); object-fit: contain; }
+.feature__name { font: 700 22px/1.2 var(--font-display); letter-spacing: -0.015em; }
+.def { margin-top: var(--space-m); }
+.def dt {
+  font: 500 12px/1 var(--font-body); color: var(--indigo);
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.def dd { margin: 10px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink-dim); }
+.def + .def { margin-top: var(--space-m); }
+@media (max-width: 760px) {
+  .feature { grid-template-columns: 1fr; gap: var(--space-s); }
+  .feature__art { width: 88px; padding: 10px; }
+  .feature__name { font-size: 19px; }
+  .def { margin-top: var(--space-s); }
+  .def dd { font-size: 14px; }
+}
+
+/* ==========================================================================
+   Liminal: pull quote (sleep science)
+   ========================================================================== */
+.quote { border-left: 3px solid var(--violet); padding-left: var(--space-m); }
+.quote blockquote { margin: 0; font: 500 22px/1.4 var(--font-display); letter-spacing: -0.01em; }
+.quote figcaption { margin-top: 10px; font-size: 14px; color: var(--ink-dim); }
+@media (max-width: 760px) { .quote blockquote { font-size: 18px; } }
+
+/* ==========================================================================
+   Liminal: test results
+   Two rounds of the same six-task test. Rebuilt as real tables so the
+   before/after is readable, and so screen readers get the grid.
+   ========================================================================== */
+.rounds { display: grid; gap: var(--space-m); }
+.round__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.round__label { font: 500 13px/1 var(--font-body); color: var(--indigo); }
+.round__title { font: 700 20px/1.2 var(--font-display); letter-spacing: -0.01em; }
+
+/* the one number that carries the comparison */
+.round__score { display: flex; align-items: baseline; gap: 8px; }
+.round__pct { font: 700 32px/1 var(--font-display); letter-spacing: -0.02em; color: var(--res-pass); }
+.round__pct--low { color: var(--res-confuse); }
+.round__pctlabel { font-size: 13px; color: var(--ink-dim); }
+
+.results { width: 100%; border-collapse: collapse; margin-top: var(--space-m); }
+.results caption { text-align: left; font-size: 13px; color: var(--ink-dim); padding-bottom: 10px; }
+.results th, .results td { padding: 8px 4px; text-align: center; font: 500 13px/1.2 var(--font-body); }
+.results thead th { color: var(--ink-dim); font-weight: 500; border-bottom: 1px solid var(--line); }
+.results tbody th { text-align: left; font-weight: 500; white-space: nowrap; padding-right: 12px; }
+.results tbody tr + tr td, .results tbody tr + tr th { border-top: 1px solid #F2F0F8; }
+.dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; }
+.dot--S { background: var(--res-pass-fill); }
+.dot--C { background: var(--res-confuse-fill); }
+.dot--U { background: var(--res-fail-fill); }
+
+.tasks { margin-top: var(--space-m); padding-top: var(--space-m); border-top: 1px solid var(--line); }
+.tasks h4 { font: 500 13px/1 var(--font-body); color: var(--ink-dim); }
+.tasks ol { margin: 12px 0 0; padding-left: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; }
+.tasks li { font-size: 14px; line-height: 1.45; color: var(--ink-dim); }
+@media (max-width: 760px) { .tasks ol { grid-template-columns: 1fr; } }
+
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: var(--space-m); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; }
+.legend .dot--S + i { color: var(--res-pass); }
+.legend i { font-style: normal; }
+.legend span:nth-child(1) i { color: var(--res-pass); }
+.legend span:nth-child(2) i { color: var(--res-fail); }
+.legend span:nth-child(3) i { color: var(--res-confuse); }
+
+@media (max-width: 620px) {
+  .results th, .results td { padding: 7px 2px; font-size: 12px; }
+  .dot { width: 12px; height: 12px; }
+}
+
+/* the delta between the two rounds, shown where round 2 appears */
+.delta { display: flex; align-items: center; gap: var(--space-m); flex-wrap: wrap;
+  padding: var(--space-m) var(--space-l); border-radius: var(--radius-sm); background: var(--blush); }
+.delta__side { display: flex; align-items: baseline; gap: 8px; }
+.delta__num { font: 700 26px/1 var(--font-display); letter-spacing: -0.02em; }
+.delta__num--before { color: var(--res-confuse); }
+.delta__num--after { color: var(--res-pass); }
+.delta__cap { font-size: 13px; color: var(--ink-dim); }
+.delta__lead { flex: 0 0 100%; font-weight: 600; color: var(--ink); }
+.delta__arrow { color: var(--slate-lav); }
+@media (max-width: 620px) { .delta { padding: var(--space-m); gap: var(--space-s); } }
+
+/* ==========================================================================
+   Liminal: testing session photos
+   The photo board sits in a card like the Interviews box. It carries its own
+   "we conducted ... user interviews" line, so there is no sentence beside it.
+   ========================================================================== */
+.testing__photo { margin-top: var(--space-m); }
+.testing__photo.evidence__open { aspect-ratio: auto; background: transparent; }
+.testing__photo img { height: auto; }
+
+/* ==========================================================================
+   Ideation pair
+   ========================================================================== */
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-l); }
+@media (max-width: 760px) { .pair { grid-template-columns: 1fr; gap: var(--space-m); } }
+
+/* ==========================================================================
+   Ticker carousels (Low-Fi and Mid-Fi Wireframes)
+   With script they loop endlessly (is-looping): the screens are cloned once,
+   so the track slides by exactly half its width and starts over without a
+   seam. The loop pauses under the pointer. Reduce motion (the OS setting) turns a strip back into a plain horizontal scroller
+   (touch, trackpad, drag, arrow keys), which is also what shows without
+   script.
+   ========================================================================== */
+.ticker__viewport {
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: thin; padding-bottom: 8px;
+}
+.ticker__viewport:focus-visible { outline-offset: 4px; }
+.ticker__track { display: flex; gap: var(--space-s); list-style: none; margin: 0; padding: 0; width: max-content; }
+.ticker__track img {
+  height: var(--ticker-h); width: auto; max-width: none;
+  border-radius: var(--radius-sm); background: var(--surface);
+}
+.ticker--wireframes { --ticker-h: 420px; }
+@media (max-width: 760px) {
+  .ticker--wireframes { --ticker-h: 300px; }
+}
+.ticker [data-clone] { display: none; }
+.ticker.is-looping [data-clone] { display: block; }
+.ticker.is-looping .ticker__viewport {
+  overflow: hidden; padding-bottom: 0;   /* no scrollbar to make room for */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+/* the spacing rides on each item instead of the gap, so half the track is
+   exactly one whole set and the jump back to the start is invisible. The
+   duration is set by script from the strip's width, for a steady speed. */
+.ticker.is-looping .ticker__track { gap: 0; animation: ticker-loop 55s linear infinite; }
+.ticker.is-looping .ticker__track > li { padding-right: var(--space-s); }
+.ticker.is-looping:hover .ticker__track { animation-play-state: paused; }
+@keyframes ticker-loop { to { transform: translateX(-50%); } }
+
+/* ==========================================================================
+   Full-width media
+   ========================================================================== */
+.card--media img { width: 100%; height: auto; border-radius: 8px; }
+
+/* ==========================================================================
+   Style Guide (live, from the Liminal v3 design system in Figma)
+   ========================================================================== */
+.sg > * + * { margin-top: var(--space-l); padding-top: var(--space-l); border-top: 1px solid var(--line); }
+.sg__title { font: 700 30px/1.15 var(--font-display); letter-spacing: -0.015em; }
+.sg__label { font: 600 var(--t1)/1.4 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand-purple); }
+.sg__sub { margin-top: 4px; font-size: 14px; color: var(--ink-dim); }
+
+.sg__art { list-style: none; margin: var(--space-m) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-m); }
+.sg__art li { text-align: center; }
+.sg__art img { width: auto; max-width: 100%; height: 150px; object-fit: contain; margin: 0 auto; }
+.sg__art b { display: block; margin-top: 8px; font: 600 16px/1.3 var(--font-display); }
+
+.sg__colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-l); }
+.sg__chips { list-style: none; margin: var(--space-s) 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.sg__chips li { font-size: 12px; line-height: 1.3; color: var(--ink-dim); }
+.sg__chips i {
+  display: block; aspect-ratio: 1; margin-bottom: 10px; border-radius: 16px; background: var(--c);
+  box-shadow: inset 0 0 0 1px rgba(36, 27, 74, 0.06), 0 3px 6px rgba(74, 56, 135, 0.07);
+}
+.sg__chips b { display: block; font: 600 14px/1.3 var(--font-display); color: var(--ink); }
+
+.sg__type { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-l); }
+.sg__specimen { margin-top: var(--space-s); color: var(--ink); }
+.sg__specimen--display { font: 700 52px/1.05 var(--font-display); letter-spacing: -0.02em; }
+.sg__specimen--body { font: 400 20px/1.5 var(--font-body); }
+
+.sg__icons { list-style: none; margin: var(--space-m) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.sg__icons img { width: 44px; height: 44px; }
+.sg__icons .sg__gap { width: 1px; height: 32px; background: var(--line); }
+
+@media (max-width: 760px) {
+  .sg__art { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg__art img { height: 120px; }
+  .sg__colors, .sg__type { grid-template-columns: 1fr; }
+  .sg__specimen--display { font-size: 42px; }
+  .sg__title { font-size: 26px; }
+}
+@media (max-width: 560px) {
+  .sg__chips { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 14px; }
+}
+.strip-card { --fit-pad: 0px; }
+.strip-card .fit { aspect-ratio: 8 / 3; }   /* Videos + Activities strips share 2.66:1 */
+.device-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-m); }
+.device-pair .fit { aspect-ratio: 4 / 3; --fit-pad: 0px; }
+@media (max-width: 560px) { .device-pair { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer { margin-top: var(--gap-section); border-top: 1px solid var(--line); }
+.site-footer__inner {
+  max-width: 1240px; margin: 0 auto; padding: 56px 24px 72px;
+  display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap;
+}
+.site-footer__display { font: 700 32px/1.1 var(--font-chrome-display); letter-spacing: -0.01em; }
+.site-footer__sub { margin-top: 8px; font-size: 14px; }
+.site-footer__cols { display: flex; gap: 72px; }
+.site-footer h2 { font: 500 15px/1.3 var(--font-chrome-display); margin-bottom: 12px; }
+.site-footer ul { list-style: none; margin: 0; padding: 0; }
+.site-footer li + li { margin-top: 8px; }
+.site-footer ul a { font-size: 14px; color: var(--ink-dim); text-decoration: none; }
+.site-footer ul a:hover { color: var(--ink); }
+
+/* --- footer utilities: copy email, reduce motion, back to top ------------ */
+.site-footer__bottom {
+  flex: 0 0 100%; width: 100%;                 /* own row inside the flex footer */
+  margin-top: var(--space-m); padding-top: var(--space-m);
+  border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px;
+}
+.footer-btn {
+  appearance: none; background: transparent; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 15px;
+  font: 500 13px/1 var(--font-chrome-body); color: var(--ink-dim); text-decoration: none;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.footer-btn:hover { color: var(--ink); border-color: #CFC9E2; }
+/* beats display:inline-flex, so the script-only buttons stay hidden without JS */
+.footer-btn[hidden] { display: none; }
+.footer-btn--plain { border-color: transparent; padding-inline: 0; margin-left: auto; }
+.footer-btn--plain:hover { border-color: transparent; text-decoration: underline; text-underline-offset: 3px; }
+.footer-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.footer-status {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+/* Author-level motion kill switch. The CSS media query cannot be overridden
+   from script, so the toggle collapses durations instead. */
+html.motion-off { scroll-behavior: auto !important; }
+html.motion-off *, html.motion-off *::before, html.motion-off *::after {
+  animation-duration: 1ms !important; animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important; transition-delay: 0ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ==========================================================================
+   Motion layer
+   Browser features only: CSS transitions, CSS keyframes, IntersectionObserver.
+   Everything sits behind prefers-reduced-motion, nothing carries meaning on
+   its own, and nothing is hidden unless the script is running (.motion-ready).
+   Tuned per project: slower, settling without bounce, to match a calm wellness app.
+   ========================================================================== */
+:root {
+  --mo-fast: 170ms;
+  --mo-mid: 400ms;
+  --mo-slow: 620ms;
+  --mo-ease: cubic-bezier(.22, .61, .36, 1);
+  --mo-accent: var(--violet);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* --- press feedback ---------------------------------------------------- */
+  .evidence__open, .text-button, .lightbox__close {
+    transition: transform var(--mo-fast) var(--mo-ease);
+  }
+  .evidence__open:active, .text-button:active { transform: scale(0.98); }
+  .lightbox__close:active { transform: scale(0.94); }
+
+  .evidence__open, .text-button { position: relative; }
+  .evidence__open::after, .text-button::after {
+    content: ""; position: absolute; inset: -3px; border-radius: 14px;
+    border: 1.5px solid var(--mo-accent); opacity: 0; pointer-events: none;
+  }
+  .is-hit::after { animation: mo-ring 420ms var(--mo-ease); }
+  @keyframes mo-ring {
+    0%   { opacity: .85; transform: scale(1); }
+    100% { opacity: 0;   transform: scale(1.06); }
+  }
+
+  /* --- image buttons hint at the zoom ------------------------------------ */
+  @media (hover: hover) {
+    .evidence__open img { transition: transform var(--mo-mid) var(--mo-ease); }
+    .evidence__open:hover img { transform: scale(1.02); }
+    .evidence__chip { transition: transform var(--mo-fast) var(--mo-ease); }
+    .evidence__open:hover .evidence__chip { transform: translateY(-1px); }
+  }
+
+  /* --- flow screens lift like a tappable v3 card, and press in ------------ */
+  .flow__open { transition: transform var(--mo-fast) var(--mo-ease); }
+  .flow__open:active { transform: scale(0.98); }
+  @media (hover: hover) {
+    .flow__open .shot { transition: transform var(--mo-mid) var(--mo-ease), box-shadow var(--mo-mid) var(--mo-ease); }
+    .flow__open:hover .shot { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--line), var(--elev-floating); }
+  }
+
+  /* --- full-size viewer opens and closes --------------------------------- */
+  .lightbox[open] { animation: mo-fade var(--mo-mid) var(--mo-ease); }
+  .lightbox[open]::backdrop { animation: mo-fade var(--mo-mid) var(--mo-ease); }
+  .lightbox[open] .lightbox__stage img { animation: mo-zoom var(--mo-mid) var(--mo-ease); }
+  .lightbox.is-closing, .lightbox.is-closing::backdrop { animation: mo-fade var(--mo-fast) var(--mo-ease) reverse; }
+  @keyframes mo-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes mo-zoom { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+
+  /* --- side index --------------------------------------------------------- */
+  .rail a, .rail__num { transition: color var(--mo-mid) var(--mo-ease), opacity var(--mo-mid) var(--mo-ease); }
+
+  /* --- reveals: only once, only when the script is running ---------------- */
+  .motion-ready [data-reveal] { opacity: 0; }
+  .motion-ready [data-reveal="rise"]  { transform: translateY(14px); }
+  .motion-ready [data-reveal="scale"] { transform: scale(.92); }
+  .motion-ready [data-reveal="note"]  { transform: translateY(10px) scale(.97); }
+  .motion-ready [data-reveal="row"]   { transform: translateX(-8px); }
+  .motion-ready [data-reveal] {
+    transition: opacity var(--mo-mid) var(--mo-ease),
+                transform var(--mo-slow) var(--mo-ease);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  .motion-ready [data-reveal].is-in { opacity: 1; transform: none; }
+  /* the sticky notes carry a rotation of their own — keep it on both ends */
+  .motion-ready [data-reveal="note"] { transform: translateY(10px) scale(.97) rotate(var(--tilt, 0deg)); }
+  .motion-ready [data-reveal="note"].is-in { transform: rotate(var(--tilt, 0deg)); }
+
+  /* result dots land with the row they belong to */
+  .motion-ready [data-reveal="row"] .dot { transform: scale(.4); opacity: .4;
+    transition: transform var(--mo-mid) var(--mo-ease), opacity var(--mo-mid) var(--mo-ease);
+    transition-delay: calc(var(--i, 0) * 90ms + 90ms); }
+  .motion-ready [data-reveal="row"].is-in .dot { transform: none; opacity: 1; }
+}
+
+/* ==========================================================================
+   Header fonts: Bricolage Grotesque and Manrope, self-hosted variable files
+   (licences in assets/fonts). On this page only the header uses them.
+   ========================================================================== */
+@font-face {
+  font-family: "Bricolage Grotesque"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/bricolage-grotesque-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Bricolage Grotesque"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/bricolage-grotesque-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Manrope"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/manrope-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Manrope"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/manrope-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ==========================================================================
+   Global header
+   The same on every page. Fixed: transparent over the home hero until the
+   page scrolls, solid from the start everywhere else (site-header--solid).
+   It carries its own colours and type, so no page theme can restyle it.
+   ========================================================================== */
+/* One height for the header, scrolled or not, on every page: nothing in it
+   moves when the page scrolls or changes. Anchors and sticky elements read it. */
+:root { --site-header-h: 84px; }
+html { scroll-padding-top: var(--site-header-h); }
+
+.site-header {
+  --nav-paper: #F8F7F4; --nav-ink: #111216; --nav-muted: #656B7C; --nav-link: #51586C;
+  --nav-line: #DEDFE2; --nav-accent: #F3480B; --nav-accent-text: #C53606;
+  --nav-ease: cubic-bezier(.22, 1, .36, 1);
+  position: fixed; inset: 0 0 auto; z-index: 40;
+  /* content sits in the site's one container, 1192px wide with 24px gutters:
+     the same as the case studies, gallery, 404, footers and home page */
+  height: var(--site-header-h); padding: 0 max(24px, calc((100% - 1192px) / 2));
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid transparent;
+  color: var(--nav-ink); font: 400 16px/1.7 "Manrope", "Segoe UI", sans-serif;
+  letter-spacing: normal; text-transform: none; -webkit-font-smoothing: antialiased;
+}
+.site-header--solid, .site-header[data-scrolled="true"], html:not(.js) .site-header {
+  background: var(--nav-paper); border-bottom-color: var(--nav-line);
+}
+/* keeps the page clear of the fixed header where no hero sits under it */
+.site-header__spacer { height: var(--site-header-h); }
+.skip-link:focus { z-index: 100; }
+
+.site-header a { color: inherit; text-decoration: none; }
+.site-header :focus-visible { outline: 2px solid var(--nav-accent); outline-offset: 6px; }
+.wordmark:focus-visible, .main-nav a:not(.nav-contact):focus-visible { border-radius: 0; }
+.site-header svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.wordmark { display: flex; align-items: center; gap: 15px; flex-shrink: 0; font-size: 13px; font-weight: 600; line-height: 1.25; }
+.monogram { font: 700 38px/1 "Bricolage Grotesque", Arial, sans-serif; letter-spacing: -0.1em; padding-right: .1em; }
+.monogram span { color: var(--nav-accent); }
+.wordmark__copy { display: grid; gap: 3px; }
+.wordmark__copy strong { color: var(--nav-ink); font-size: 14px; font-weight: 700; letter-spacing: -0.035em; }
+.wordmark__copy small { color: var(--nav-muted); font-size: 12px; font-weight: 500; }
+
+.main-nav {
+  display: flex; align-items: center; gap: clamp(18px, 3vw, 48px);
+  margin-left: auto;
+  font-size: 14px; font-weight: 500;
+}
+.main-nav a { position: relative; padding: 12px 0; color: var(--nav-link); }
+.main-nav a:hover, .main-nav a[aria-current] { color: var(--nav-ink); }
+/* the current page (on a case study, Work) and the hovered link get a dot */
+.main-nav a::after {
+  content: ""; position: absolute; bottom: 1px; left: 50%;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--nav-accent);
+  transform: translateX(-50%) scale(0);
+}
+.main-nav a:hover::after, .main-nav a[aria-current]::after { transform: translateX(-50%) scale(1); }
+.main-nav .nav-contact {
+  display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 20px;
+  border: 1px solid rgba(17, 18, 22, .12); border-radius: 999px;
+  background: var(--nav-ink); color: #fff;
+}
+.main-nav .nav-contact:hover { background: var(--nav-accent-text); border-color: var(--nav-accent-text); color: #fff; }
+.main-nav .nav-contact::after { content: none; }
+
+.menu-toggle { display: none; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+/* beats the display:grid below, so the script-only button stays hidden without JS */
+.menu-toggle[hidden] { display: none !important; }
+.menu-toggle .icon-close, .menu-toggle[aria-expanded="true"] .icon-open { display: none; }
+.menu-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+@media (max-width: 1100px) {
+  .main-nav { gap: clamp(15px, 2vw, 25px); font-size: 13px; }
+  .main-nav .nav-contact { min-height: 42px; gap: 8px; padding-inline: 14px; }
+}
+@media (max-width: 760px) {
+  .js .menu-toggle {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    border: 1px solid rgba(17, 18, 22, .15); border-radius: 50%; background: rgba(248, 247, 244, .75);
+  }
+  .js .main-nav {
+    position: absolute; top: calc(100% - 1px); right: 12px; left: 12px;
+    display: none; flex-direction: column; align-items: stretch; gap: 0;
+    margin: 0; padding: 10px 22px 18px;
+    border: 1px solid rgba(17, 18, 22, .09); border-radius: 0 0 16px 16px;
+    background: rgba(248, 247, 244, .98); box-shadow: 0 18px 40px rgba(17, 18, 22, .1);
+  }
+  .js .main-nav.open { display: flex; }
+  .js .main-nav a { min-height: 46px; padding: 12px 0; font-size: 15px; }
+  .js .main-nav a::after { bottom: 8px; left: auto; right: 0; }
+  .js .main-nav .nav-contact { justify-content: center; margin-top: 9px; padding-inline: 18px; }
+}
+@media (max-width: 760px) {
+  :root { --site-header-h: 72px; }
+  .wordmark { gap: 11px; font-size: 11px; }
+  .monogram { font-size: 33px; }
+  .wordmark__copy strong { font-size: 12px; }
+  .wordmark__copy small { font-size: 10px; }
+  /* without script the links simply wrap under the wordmark */
+  html:not(.js) .site-header { position: static; height: auto; flex-wrap: wrap; gap: 6px 16px; padding-block: 16px; }
+  html:not(.js) .main-nav { flex-wrap: wrap; width: 100%; margin: 0; gap: 0 18px; }
+  html:not(.js) .site-header__spacer { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Two speeds, one curve: 160ms answers the pointer, 240ms is for things changing state. */
+  .site-header { transition: background-color 240ms var(--nav-ease), border-color 240ms var(--nav-ease); }
+  .main-nav a { transition: color 160ms var(--nav-ease); }
+  .main-nav a::after { transition: transform 160ms var(--nav-ease); }
+  .main-nav .nav-contact { transition: background-color 160ms var(--nav-ease), border-color 160ms var(--nav-ease); }
+  @media (max-width: 760px) {
+    .js .main-nav.open { animation: nav-menu-enter 240ms var(--nav-ease) both; }
+  }
+  @keyframes nav-menu-enter { from { opacity: 0; transform: translateY(-8px); } }
+}
+
+/* Moving between pages. The page cross-fades instead of flashing, and the
+   header is a layer of its own, so it holds still while the page changes
+   under it. Typed (page-nav) so a page's own same-page transitions, like the
+   Vibe Coding simulator's, keep their rules. Reduce motion skips it; browsers
+   without cross-document view transitions simply navigate. */
+@view-transition { navigation: auto; types: page-nav; }
+.site-header { view-transition-name: site-header; }
+html:active-view-transition-type(page-nav)::view-transition-old(root) { animation: 240ms cubic-bezier(.4, 0, .2, 1) both page-out; mix-blend-mode: plus-lighter; }
+html:active-view-transition-type(page-nav)::view-transition-new(root) { animation: 240ms cubic-bezier(.4, 0, .2, 1) both page-in; mix-blend-mode: plus-lighter; }
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; } }
+html.motion-off::view-transition-group(*),
+html.motion-off::view-transition-old(*),
+html.motion-off::view-transition-new(*) { animation: none !important; }
+</style>
+<link rel="stylesheet" href="../assets/celestial.css">
+<style id="celestial-case-overrides">
+
+/* Editorial theme. Screens, swatches and product demos retain their own identity. */
+body.celestial-case {
+  --bg: var(--celestial-bg, #050B18);
+  --surface: var(--celestial-surface, #0D1B2B);
+  --surface-sunk: var(--celestial-panel, #112235);
+  --ink: var(--celestial-text, #EEF3F8);
+  --ink-dim: var(--celestial-muted, #ADBDCF);
+  --line: var(--celestial-line, #2A4056);
+  --brand-purple: var(--celestial-accent, #A0E6D9);
+  --accent: var(--celestial-accent, #A0E6D9);
+  --accent-soft: #112B37;
+  --font-display: "Bricolage Grotesque", Arial, sans-serif;
+  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-chrome-display: "Bricolage Grotesque", Arial, sans-serif;
+  --font-chrome-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --frame: 0 0 0 1px var(--line), 0 14px 34px rgba(0, 0, 0, .16);
+  --elev-card: 0 3px 12px rgba(0, 0, 0, .14);
+  --elev-raised: 0 8px 22px rgba(0, 0, 0, .18);
+  --elev-floating: 0 16px 36px rgba(0, 0, 0, .22);
+  --mo-accent: var(--celestial-accent, #A0E6D9);
+  color: var(--ink);
+  background: var(--bg);
+}
+body.celestial-case .rail {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+body.celestial-case .rail a[aria-current="true"],
+body.celestial-case .rail a[aria-current="true"] .rail__num {
+  color: var(--celestial-accent, #A0E6D9);
+}
+body.celestial-case .rail__bar > span { background: var(--celestial-accent, #A0E6D9); }
+body.celestial-case .card,
+body.celestial-case .method { border: 1px solid var(--line); }
+body.celestial-case .hero-media { box-shadow: var(--frame); }
+body.celestial-case .case-title,
+body.celestial-case .t2,
+body.celestial-case .t3 { color: var(--ink); }
+body.celestial-case .eyebrow { color: var(--celestial-accent, #A0E6D9); }
+body.celestial-case .evidence__chip,
+body.celestial-case .datapoints__count {
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line), 0 6px 18px rgba(0, 0, 0, .2);
+}
+body.celestial-case .evidence__open:hover .evidence__chip,
+body.celestial-case .evidence__open:focus-visible .evidence__chip {
+  color: var(--celestial-accent, #A0E6D9);
+  background: var(--surface-sunk);
+  box-shadow: 0 0 0 1px var(--celestial-accent, #A0E6D9);
+}
+body.celestial-case .text-button { text-decoration-color: var(--line); }
+body.celestial-case .text-button:hover { text-decoration-color: currentColor; }
+body.celestial-case .lightbox::backdrop { background: rgba(3, 8, 18, .95); }
+body.celestial-case .lightbox__close {
+  background: var(--surface-sunk);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line);
+}
+body.celestial-case :focus-visible { outline-color: var(--celestial-accent, #A0E6D9); }
+body.celestial-case .skip-link { background: var(--celestial-accent, #A0E6D9); color: #050B18; }
+body.celestial-case .sg__chips i { box-shadow: 0 0 0 1px var(--line), 0 6px 14px rgba(0, 0, 0, .16); }
+
+body.celestial-case {
+  --periwinkle: #8DBAB9;
+  --violet: var(--celestial-accent, #A0E6D9);
+  --indigo: #B9DDDD;
+  --slate-lav: #8DA9BC;
+  --blush: #112235;
+  --tile: #132A3B;
+  --res-pass: #9CD8B1;
+  --res-confuse: #E5CD83;
+  --res-fail: #F5A7A5;
+  --res-pass-fill: #69BF89;
+  --res-confuse-fill: #D9B85D;
+  --res-fail-fill: #E98585;
+}
+body.celestial-case .results tbody tr + tr td,
+body.celestial-case .results tbody tr + tr th { border-color: var(--line); }
+/* This live splash lockup is product evidence, with Liminal's own type and palette. */
+body.celestial-case .hero-brand {
+  --ink: #241B4A;
+  --ink-dim: #5B5387;
+  --font-display: "Figtree", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, sans-serif;
+  background: radial-gradient(120% 90% at 50% 20%, #F5F1FF 0%, #E5DDFC 55%, #CEBCFC 100%);
+}
+body.celestial-case .sg__specimen { font-family: "Figtree", system-ui, sans-serif; }
+body.celestial-case .sg__icons { background: #F5F3FA; padding: 16px; border-radius: 12px; }
+body.celestial-case .sg__icons .sg__gap { background: #E3DEF3; }
+</style>
+</head>
+<body class="celestial-site celestial-case celestial-case--liminal">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header site-header--solid" data-scrolled="false">
+  <a class="wordmark" href="../index.html#home" aria-label="Jamiyan Batnyam, home">
+    <span class="monogram" aria-hidden="true">JB<span>·</span></span>
+    <span class="wordmark__copy">
+      <strong>Jamiyan Batnyam</strong>
+      <small>UX / Product Designer</small>
+    </span>
+  </a>
+  <nav class="main-nav" id="main-nav" aria-label="Main">
+    <a href="../index.html#home">Home</a>
+    <a href="../index.html#projects" aria-current="true">Work</a>
+    <a href="../about.html">About</a>
+    <a href="../Jamiyan_Batnyam_Resume.pdf" target="_blank" rel="noopener">Résumé</a>
+    <a href="../visual.html">Gallery</a>
+    <a href="../playground.html">Playground</a>
+    <a href="../index.html#contact">Contact</a>
+    <a class="nav-contact" href="mailto:jamyanart@gmail.com">Let’s connect <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></a>
+  </nav>
+  <button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu" hidden>
+    <svg class="icon-open" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+    <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+  </button>
+</header>
+<div class="site-header__spacer" aria-hidden="true"></div>
+<script>
+/* Global header, the same on every page: solid once the page leaves the top,
+   and the phone menu. */
+(function () {
+  "use strict";
+  var header = document.querySelector(".site-header");
+  if (!header) return;
+
+  var frame = 0;
+  var paint = function () {
+    frame = 0;
+    header.setAttribute("data-scrolled", window.scrollY > 40 ? "true" : "false");
+  };
+  window.addEventListener("scroll", function () {
+    if (!frame) frame = window.requestAnimationFrame(paint);
+  }, { passive: true });
+  paint();
+
+  var toggle = document.getElementById("menu-toggle");
+  var nav = document.getElementById("main-nav");
+  if (!toggle || !nav) return;
+  toggle.hidden = false;
+  var isOpen = function () { return nav.classList.contains("open"); };
+  var setMenu = function (open, returnFocus) {
+    nav.classList.toggle("open", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    if (open) {
+      var first = nav.querySelector("a");
+      if (first) first.focus({ preventScroll: true });
+    } else if (returnFocus) {
+      toggle.focus();
+    }
+  };
+  toggle.addEventListener("click", function () { setMenu(!isOpen()); });
+  nav.addEventListener("click", function (e) { if (isOpen() && e.target.closest("a")) setMenu(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen()) setMenu(false, true); });
+  document.addEventListener("pointerdown", function (e) { if (isOpen() && !header.contains(e.target)) setMenu(false); });
+  header.addEventListener("focusout", function (e) {
+    if (isOpen() && e.relatedTarget && !header.contains(e.relatedTarget)) setMenu(false);
+  });
+}());
+</script>
+
+<div class="layout">
+  <aside class="rail">
+    <p class="rail__eyebrow">In this case study</p>
+    <nav class="rail__nav" aria-label="Case study sections">
+      <a href="#overview"><span class="rail__num" aria-hidden="true">01</span>Overview</a>
+      <a href="#problem"><span class="rail__num" aria-hidden="true">02</span>Problem</a>
+      <a href="#research"><span class="rail__num" aria-hidden="true">03</span>Research</a>
+      <a href="#solution"><span class="rail__num" aria-hidden="true">04</span>Solution</a>
+      <a href="#final-delivery"><span class="rail__num" aria-hidden="true">05</span>Final Delivery</a>
+      <a href="#reflection"><span class="rail__num" aria-hidden="true">06</span>Reflection</a>
+    </nav>
+    <div class="rail__progress" id="rail-progress" hidden>
+      <div class="rail__bar" id="rail-bar" role="progressbar" aria-label="Reading progress"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <p class="rail__meta" id="rail-meta">0% read</p>
+    </div>
+  </aside>
+
+  <main id="main" class="content">
+
+    <!-- ================================================================ HERO -->
+    <section id="hero">
+      <!-- The v3 splash lockup. App icon: liminal-logo.svg (mark alone: liminal-mark.svg) -->
+      <div class="hero-media hero-brand">
+        <img class="hero-brand__icon" src="../assets/img/liminal/liminal-logo.svg" alt="" width="512" height="512">
+        <div>
+          <p class="hero-brand__name">liminal</p>
+          <p class="hero-brand__tag">your space to breathe, reflect, and grow</p>
+        </div>
+      </div>
+
+      <div class="case-head">
+        <div>
+          <h1 class="case-title">Liminal</h1>
+          <p class="case-sub">Student Team Project</p>
+        </div>
+        <dl class="facts">
+          <div><dt>Year</dt><dd>2025</dd></div>
+          <div><dt>Duration</dt><dd>10 Weeks</dd></div>
+          <div><dt>Team</dt><dd>3 people</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============================================================ OVERVIEW -->
+    <section id="overview" class="intro" style="scroll-margin-top:72px">
+      <div class="block">
+        <h2 class="t3">Overview</h2>
+        <p class="body">Liminal is a wellness app for people with anxiety and depression who feel stuck, caught in overthinking and pulling away from others. It offers four tools to help shift those patterns. SubLab lets you make personal affirmation tracks, Meditation offers guided and solo sessions, the Journal tracks habits and mood, and Community is a place to share support.</p>
+        <p class="body" style="margin-top:var(--space-s)">The name means an in-between space. The app is meant to be a bridge that helps people work through their anxiety and depression.</p>
+      </div>
+      <div class="block">
+        <h2 class="t3">My Roles</h2>
+        <p class="body">UI Design, UX Research, Visual Design</p>
+      </div>
+      <div class="block">
+        <h2 class="t3">My contribution</h2>
+        <ul class="contribution__list">
+          <li>All three of us shaped Liminal together, from the research and features to the wireframes and both rounds of testing. No one person decided the whole thing.</li>
+          <li>The final redesign is mine. The screens under Introducing Liminal and the style guide are from it.</li>
+        </ul>
+      </div>
+
+      <!-- v3 screens composited into phone renders in Photoshop (layered PSDs kept outside the site) -->
+      <div class="mockups">
+        <img class="mockups__wide" src="../assets/img/liminal/mockup-trio.jpg" alt="Three lavender phones on a pastel set, showing the Sublab, Home and Journal screens" width="1536" height="1024" loading="lazy">
+        <img src="../assets/img/liminal/mockup-duo.jpg" alt="Two floating phones showing the Meditate screen and Now playing" width="1254" height="1254" loading="lazy">
+        <img src="../assets/img/liminal/mockup-flatlay.jpg" alt="Three phones lying among pastel pebbles, showing Statistics, Community and Profile" width="1254" height="1254" loading="lazy">
+      </div>
+    </section>
+
+    <!-- ============================================================= PROBLEM -->
+    <section id="problem" class="section">
+      <div class="split">
+        <div>
+          <p class="eyebrow">Discovery</p>
+          <h2 class="t2">Problem Space</h2>
+          <p class="body" style="margin-top:var(--space-m)">Many young adults want real connection, but anxiety and depression make reaching out feel impossible. So they escape into digital distractions, which leaves them <strong>more isolated</strong> than before.</p>
+        </div>
+        <figure class="split__media statement">
+          <img src="../assets/img/liminal/mood-1-very-low.png" alt="" width="160" height="160" loading="lazy">
+          <p>Anxiety and depression have become a deeper, more complex crisis since the pandemic.</p>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================================================ RESEARCH -->
+    <section id="research" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Research</p>
+        <h2 class="t2">Understanding The Problem</h2>
+        <!-- DRAFT: J to rewrite. The live page carries ContentPlus's research paragraph
+             (cultural probe kits, children's screen time). Replaced with a sentence
+             describing the methods this page actually shows. -->
+        <p class="body">We surveyed and interviewed young adults to learn how anxiety and depression affect their daily habits, their relationships, and how they look for relief.</p>
+      </div>
+
+      <div class="block">
+        <div class="stats">
+          <div class="stats__grid">
+            <div class="stat"><p class="stat__num">23</p><p class="stat__label">Survey questions</p></div>
+            <div class="stat"><p class="stat__num">32</p><p class="stat__label">Survey responses</p></div>
+            <div class="stat"><p class="stat__num">3</p><p class="stat__label">Question types</p></div>
+            <div class="stat"><p class="stat__num">7</p><p class="stat__label">Interviews</p></div>
+          </div>
+          <div>
+            <button class="evidence__open" type="button" data-full="../assets/img/framer/EUTZn6DIrn9dW6z9QlTaL4ystQw-2048.webp" data-alt="The user research summary board, with the survey form" aria-label="View the user research board full size"><img src="../assets/img/framer/EUTZn6DIrn9dW6z9QlTaL4ystQw-1024.webp" alt="" width="1672" height="983" loading="lazy"><span class="evidence__chip" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg>View full size</span></button>
+            <p class="caption">Our survey, "Anxious and Depressed," and the research summary board</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <figure class="card datapoints">
+          <div class="datapoints__grid" role="img" aria-label="A grid of 189 tiles, one for every data point collected">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <p class="datapoints__count">189 DATA POINTS</p>
+          <div class="datapoints__foot">
+            <p class="caption">Collected from the survey and the interviews</p>
+            <button class="text-button" type="button" data-full="../assets/img/framer/hFTIXnrChKs6jzXh5hMKtZp7tQ4-4096.webp" data-alt="The original affinity board of 189 data points"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg>View the original board</button>
+          </div>
+        </figure>
+      </div>
+
+      <div class="block">
+        <article class="card">
+          <header class="insight__head">
+            <h3 class="t3">Interviews</h3>
+            <p class="method__kicker">Key Insights</p>
+          </header>
+          <ul class="findings">
+            <li class="finding">
+              <div class="finding__art"><img src="../assets/img/liminal/insight-1-anxiety.jpg" alt="" width="800" height="800" loading="lazy"></div>
+              <div class="finding__text"><span class="finding__n">01</span><p>Anxiety is constant, so people treat it as normal</p></div>
+            </li>
+            <li class="finding">
+              <div class="finding__art"><img src="../assets/img/liminal/insight-2-connection.jpg" alt="" width="800" height="800" loading="lazy"></div>
+              <div class="finding__text"><span class="finding__n">02</span><p>People crave connection, then pull away from it</p></div>
+            </li>
+            <li class="finding">
+              <div class="finding__art"><img src="../assets/img/liminal/insight-3-relationships.jpg" alt="" width="800" height="800" loading="lazy"></div>
+              <div class="finding__text"><span class="finding__n">03</span><p>Stress slowly wears relationships down</p></div>
+            </li>
+            <li class="finding">
+              <div class="finding__art"><img src="../assets/img/liminal/insight-4-reflection.jpg" alt="" width="800" height="800" loading="lazy"></div>
+              <div class="finding__text"><span class="finding__n">04</span><p>People need reflection, but rarely make time for it</p></div>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================ SOLUTION -->
+    <section id="solution" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Solution</p>
+        <h2 class="t2">Ideation</h2>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">The Proposal</h3>
+        <p class="body">A self-help app for people with anxiety and depression that helps them break out of overthinking and start acting again. Based on what we heard in the survey and interviews, we chose four tools.</p>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">Features</h3>
+        <div style="margin-top:var(--space-m)">
+        <article class="card feature">
+          <div class="feature__art"><img src="../assets/img/liminal/hero-sublab.png" alt="" width="124" height="360" loading="lazy"></div>
+          <div>
+            <h4 class="feature__name">SubLab</h4>
+            <dl class="def"><dt>What it is</dt><dd>Make your own affirmation track: your affirmations, mixed quietly under music or ambient sound.</dd></dl>
+            <dl class="def"><dt>How It Works</dt><dd>Type or record your affirmations and pick a background sound. The Composer mixes them in quietly underneath. Play the track while you work, meditate or wind down.</dd></dl>
+          </div>
+        </article>
+        <article class="card feature">
+          <div class="feature__art"><img src="../assets/img/liminal/hero-meditation-orb.png" alt="" width="301" height="360" loading="lazy"></div>
+          <div>
+            <h4 class="feature__name">Meditation</h4>
+            <dl class="def"><dt>What it is</dt><dd>Guided or solo sessions that mix prompts, ambient sound and silence to help you settle your thoughts.</dd></dl>
+            <dl class="def"><dt>How It Works</dt><dd>Choose guided (follow a voice) or solo (just sound), set the mood, and end with a moment to notice how you feel.</dd></dl>
+          </div>
+        </article>
+        <article class="card feature">
+          <div class="feature__art"><img src="../assets/img/liminal/nav-journal.png" alt="" width="320" height="320" loading="lazy"></div>
+          <div>
+            <h4 class="feature__name">Journal</h4>
+            <dl class="def"><dt>What it is</dt><dd>A place to notice your patterns: what you think, which feelings repeat, and how your story changes over time.</dd></dl>
+            <dl class="def"><dt>How It Works</dt><dd>Pick an entry type, set an intention, go deeper, then close the entry.</dd></dl>
+          </div>
+        </article>
+        <article class="card feature">
+          <div class="feature__art"><img src="../assets/img/liminal/hero-community.png" alt="" width="360" height="342" loading="lazy"></div>
+          <div>
+            <h4 class="feature__name">Community</h4>
+            <dl class="def"><dt>What it is</dt><dd>A space to share affirmations and reflections, and support each other.</dd></dl>
+            <dl class="def"><dt>How It Works</dt><dd>Post an affirmation or reflection, respond to others, post privately or anonymously, and filter by topic.</dd></dl>
+          </div>
+        </article>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="split">
+          <figure class="quote">
+            <blockquote>It's not often an immediate effect. Rather, it's like watering a plant.</blockquote>
+            <figcaption>Huma Malak, psychotherapist</figcaption>
+            <p class="body" style="margin-top:var(--space-m)">Some sleep studies suggest the brain still responds to simple, repeated sounds during sleep, but the evidence for learning this way is limited.</p>
+          </figure>
+          <div class="split__media">
+            <button class="evidence__open" type="button" data-full="../assets/img/framer/gGjumpUQ8H26bbzNh1LKeaVo-2048.webp" data-alt="A collage of research papers on subliminal suggestion and sleep learning" aria-label="View the research paper collage full size"><img src="../assets/img/framer/gGjumpUQ8H26bbzNh1LKeaVo-1024.webp" alt="" width="1955" height="1150" loading="lazy"><span class="evidence__chip" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg>View full size</span></button>
+            <p class="caption">The papers we drew on</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">Low-Fi Wireframes</h3>
+        <div class="ticker ticker--wireframes" data-ticker style="margin-top:var(--space-m)">
+          <div class="ticker__viewport" tabindex="0" role="region" aria-label="Low-fidelity wireframe, scrollable">
+            <ul class="ticker__track">
+              <li><img src="../assets/img/framer/bmybAtoXJjEn6Kw66vUHCZKw-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/AM7vQPEfMEzefjsaUK96JhhUYw-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/nvUcOeGRRitKtS5N0gJyiLdKqQ-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/dHcZVhLPoScpMKl1bQ68Rcygm2g-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/3nVRocDKuVzvcdW64iG4pVml09A-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/RJ41cjyZOe34JYlfCDxUtaDjyw-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/j3VnQVsgsSvnlZAmPdlRITxe4ok-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/sr088R3rIeND5ab6ae7GB4RRI-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/dAm286i0Mp0use6ppx51pwGVrk-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/BLVK8SHF6xKGLn0pU7MgKFOQ4-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/63x1Wmr6gml27d4JSp6T73uTjaw-1024.webp" alt="Low-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <article class="card">
+          <header class="insight__head">
+            <h3 class="t3">User Testing Low-Fi</h3>
+          </header>
+          <button class="evidence__open testing__photo" type="button" data-full="../assets/img/framer/CsCnCGMqNa0W1skxGuxZhVjf4k-2048.webp" data-alt="Photos of the first round of testing sessions" aria-label="View the first-round session photos full size"><img src="../assets/img/framer/CsCnCGMqNa0W1skxGuxZhVjf4k-1024.webp" alt="" width="1687" height="855" loading="lazy"><span class="evidence__chip" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg>View full size</span></button>
+        </article>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">Test Results</h3>
+        <div class="rounds" style="margin-top:var(--space-m)">
+        <section class="card round" aria-labelledby="round1">
+          <header class="round__head">
+            <div>
+              <p class="round__label">Round 1</p>
+              <h4 class="round__title" id="round1">Low-fidelity, 5 participants</h4>
+            </div>
+            <p class="round__score"><span class="round__pct round__pct--low">30%</span><span class="round__pctlabel">9 of 30 attempts with no trouble</span></p>
+          </header>
+          <table class="results">
+            <caption>Each cell is one participant's result on one task.</caption>
+            <thead><tr><th scope="col"><span class="sr-only">Participant</span></th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th></tr></thead>
+            <tbody>
+            <tr><th scope="row">User 1</th><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td></tr>
+            <tr><th scope="row">User 2</th><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            <tr><th scope="row">User 3</th><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            <tr><th scope="row">User 4</th><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td></tr>
+            <tr><th scope="row">User 5</th><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td></tr>
+            </tbody>
+          </table>
+          <p class="legend">
+            <span><span class="dot dot--S" aria-hidden="true"></span><i>Successful</i></span>
+            <span><span class="dot dot--U" aria-hidden="true"></span><i>Unsuccessful</i></span>
+            <span><span class="dot dot--C" aria-hidden="true"></span><i>Confusion</i></span>
+          </p>
+          <div class="tasks">
+            <h4>Tasks</h4>
+            <ol>
+              <li>Create a subliminal track</li>
+              <li>Start a solo meditation</li>
+              <li>Pick an audiobook in Self Mastery</li>
+              <li>Check the calendar on the home screen</li>
+              <li>Copy an affirmation in Community</li>
+              <li>Post your own affirmation</li>
+            </ol>
+          </div>
+        </section>
+        </div>
+        <p class="body" style="margin-top:var(--space-m)">Testing showed real usability problems. Creating a track was the hardest: 3 of 5 people couldn't finish it and the other 2 got confused. Navigation, Community and the audiobook section felt overwhelming and needed clearer guidance. So we redesigned the visuals and interface to make each step clearer, especially creating a track in SubLab.</p>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">Mid-Fi Wireframes</h3>
+        <div class="ticker ticker--wireframes" data-ticker style="margin-top:var(--space-m)">
+          <div class="ticker__viewport" tabindex="0" role="region" aria-label="Mid-fidelity wireframe, scrollable">
+            <ul class="ticker__track">
+              <li><img src="../assets/img/framer/tvJEHsWpIy28glFKNjbIOKsY-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/DEbsPBp7POgZIHmw0Ma8o5clYM-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/8gGAFyRRiELPmd1YwiR07v8FY-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/aheiJmy4Fa7xHB9U7Sn8ozrY-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/DCYFlRbiXxQ0WabOBSpXkd3e1A-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/PlZEfIOkvlfDCNaYF01nf3tFcA-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/QmeNmAUySR0fV7Xu4llYVGuMzs-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/ft8PYyYuEWs7tmCIlKBah8zH0-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/SbMxZtORe5fy1gxZsmj4iTMum6s-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+              <li><img src="../assets/img/framer/VuSA61wpGv56xcLOdn4J4AT8-1024.webp" alt="Mid-fidelity wireframe screen" width="2010" height="4370" loading="lazy"></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <article class="card">
+          <header class="insight__head">
+            <h3 class="t3">User Testing Mid-Fi</h3>
+          </header>
+          <button class="evidence__open testing__photo" type="button" data-full="../assets/img/framer/BUIEwtKfgEC3KgKhpCn1A2e8FA-2048.webp" data-alt="Photos of the second round of testing sessions" aria-label="View the second-round session photos full size"><img src="../assets/img/framer/BUIEwtKfgEC3KgKhpCn1A2e8FA-1024.webp" alt="" width="1682" height="817" loading="lazy"><span class="evidence__chip" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9"/></svg>View full size</span></button>
+        </article>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">Test Results</h3>
+        <div class="rounds" style="margin-top:var(--space-m)">
+          <!-- Like for like: only the two tasks that appear in both rounds' grids
+               (round 1 tasks 1 and 2, round 2 tasks 1 and 3). Round 1: track 0/5,
+               meditation 3/5 = 3/10. Round 2: track 2/6, meditation 3/6 = 5/12.
+               The rounds' overall scores (30%, 78%) use different task lists. -->
+          <div class="delta">
+            <p class="delta__cap delta__lead">The same two tasks, in both rounds</p>
+            <p class="delta__side"><span class="delta__num delta__num--before">30%</span><span class="delta__cap">round 1, 3 of 10 attempts</span></p>
+            <span class="delta__arrow" aria-hidden="true">&rarr;</span>
+            <p class="delta__side"><span class="delta__num delta__num--after">42%</span><span class="delta__cap">round 2, 5 of 12 attempts</span></p>
+            <p class="delta__cap">Finished with no trouble, on the two tasks tested in both rounds. Creating a track went from 0 of 5 to 2 of 6; starting a solo meditation stayed about the same (3 of 5, then 3 of 6). Round 2 otherwise used a revised task list, so its overall 78% isn’t directly comparable with round 1’s overall 30%.</p>
+          </div>
+        <section class="card round" aria-labelledby="round2">
+          <header class="round__head">
+            <div>
+              <p class="round__label">Round 2</p>
+              <h4 class="round__title" id="round2">Mid-fidelity, 6 participants</h4>
+            </div>
+            <p class="round__score"><span class="round__pct">78%</span><span class="round__pctlabel">28 of 36 attempts with no trouble</span></p>
+          </header>
+          <table class="results">
+            <caption>Each cell is one participant's result on one task.</caption>
+            <thead><tr><th scope="col"><span class="sr-only">Participant</span></th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th></tr></thead>
+            <tbody>
+            <tr><th scope="row">User 1</th><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            <tr><th scope="row">User 2</th><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            <tr><th scope="row">User 3</th><td><span class="dot dot--U" aria-hidden="true"></span><span class="sr-only">Unsuccessful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            <tr><th scope="row">User 4</th><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            <tr><th scope="row">User 5</th><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            <tr><th scope="row">User 6</th><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--C" aria-hidden="true"></span><span class="sr-only">Confusion</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td><td><span class="dot dot--S" aria-hidden="true"></span><span class="sr-only">Successful</span></td></tr>
+            </tbody>
+          </table>
+          <p class="legend">
+            <span><span class="dot dot--S" aria-hidden="true"></span><i>Successful</i></span>
+            <span><span class="dot dot--U" aria-hidden="true"></span><i>Unsuccessful</i></span>
+            <span><span class="dot dot--C" aria-hidden="true"></span><i>Confusion</i></span>
+          </p>
+          <div class="tasks">
+            <h4>Tasks</h4>
+            <ol>
+              <li>Create a subliminal track</li>
+              <li>Pick a habit, add a goal and check it off</li>
+              <li>Start a solo meditation</li>
+              <li>Journal: pick two habits, track your mood, view statistics</li>
+              <li>View your profile and achievements</li>
+              <li>Choose a community topic, browse, search and post</li>
+            </ol>
+          </div>
+        </section>
+        </div>
+        <p class="body" style="margin-top:var(--space-m)">Most tasks went smoothly. Creating a track was still the weak spot (2 of 6 couldn't finish it and 2 got confused), which is why the final onboarding teaches SubLab step by step.</p>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">Style Guide</h3>
+        <!-- Rebuilt live from the Liminal v3 design system in Figma (00 — Design System, 02 — Illustrations, 01 — Icon Library). -->
+        <figure class="card sg" style="margin-top:var(--space-m)">
+          <div>
+            <p class="sg__title">Illustrations</p>
+            <ul class="sg__art">
+              <li><img src="../assets/img/liminal/hero-sublab.png" alt="" width="124" height="360" loading="lazy"><b>SubLab</b></li>
+              <li><img src="../assets/img/liminal/hero-meditation-orb.png" alt="" width="301" height="360" loading="lazy"><b>Meditation orb</b></li>
+              <li><img src="../assets/img/liminal/hero-mandala.png" alt="" width="360" height="358" loading="lazy"><b>Mandala</b></li>
+              <li><img src="../assets/img/liminal/hero-community.png" alt="" width="360" height="342" loading="lazy"><b>Community</b></li>
+            </ul>
+          </div>
+
+          <div class="sg__colors">
+            <div>
+              <p class="sg__label">Lavender</p>
+              <ul class="sg__chips">
+                <li><i style="--c:#F5F3FA"></i><b>Canvas</b>#F5F3FA</li>
+                <li><i style="--c:#E5DDFC"></i><b>Accent soft</b>#E5DDFC</li>
+                <li><i style="--c:#CEBCFC"></i><b>Lavender</b>#CEBCFC</li>
+                <li><i style="--c:#6256BA"></i><b>Accent</b>#6256BA</li>
+                <li><i style="--c:#4A3F94"></i><b>Accent strong</b>#4A3F94</li>
+              </ul>
+            </div>
+            <div>
+              <p class="sg__label">Supporting</p>
+              <ul class="sg__chips">
+                <li><i style="--c:#D2E9FC"></i><b>Sky soft</b>#D2E9FC</li>
+                <li><i style="--c:#3D92D6"></i><b>Sky</b>#3D92D6</li>
+                <li><i style="--c:#CDF3E5"></i><b>Mint soft</b>#CDF3E5</li>
+                <li><i style="--c:#32A37B"></i><b>Mint</b>#32A37B</li>
+                <li><i style="--c:#241B4A"></i><b>Ink</b>#241B4A</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="sg__type">
+            <div>
+              <p class="sg__label">Figtree Bold</p>
+              <p class="sg__sub">Display and headings</p>
+              <p class="sg__specimen sg__specimen--display">Breathe out</p>
+            </div>
+            <div>
+              <p class="sg__label">Figtree Regular</p>
+              <p class="sg__sub">Everything you read</p>
+              <p class="sg__specimen sg__specimen--body">A quiet place to put the noise down.</p>
+            </div>
+          </div>
+
+          <div>
+            <p class="sg__label">Icons</p>
+            <p class="sg__sub">Navigation, and the mood scale used for check-ins</p>
+            <ul class="sg__icons" aria-label="Icon samples">
+              <li><img src="../assets/img/liminal/nav-home.png" alt="Home" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/nav-sublab.png" alt="SubLab" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/nav-meditation.png" alt="Meditate" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/nav-journal.png" alt="Journal" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/nav-library.png" alt="Library" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/nav-community.png" alt="Community" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/nav-profile.png" alt="Profile" width="160" height="160" loading="lazy"></li>
+              <li class="sg__gap" aria-hidden="true"></li>
+              <li><img src="../assets/img/liminal/mood-1-very-low.png" alt="Mood: very low" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/mood-2-low.png" alt="Mood: low" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/mood-3-neutral.png" alt="Mood: neutral" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/mood-4-good.png" alt="Mood: good" width="160" height="160" loading="lazy"></li>
+              <li><img src="../assets/img/liminal/mood-5-great.png" alt="Mood: great" width="160" height="160" loading="lazy"></li>
+            </ul>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ====================================================== FINAL DELIVERY -->
+    <section id="final-delivery" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Final Delivery</p>
+        <h2 class="t2">Introducing Liminal</h2>
+      </div>
+
+      <!-- Each flow is four v3 screens in order, exported at 2x from the Figma page "Liminal — v3" -->
+      <div class="block">
+        <h3 class="t3">Onboarding</h3>
+        <p class="body">Onboarding introduces the home screen and habit setup, then focuses on SubLab, the feature testers found most confusing, with a step-by-step tutorial.</p>
+        <ol class="flow card" aria-label="Onboarding flow">
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/onboarding-welcome.jpg" data-alt="Onboarding, Welcome to Liminal: a figure walks through an arched doorway. Your space to breathe, reflect, and grow." aria-label="View the Welcome screen full size"><img class="shot" src="../assets/img/liminal/screens/onboarding-welcome.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">01</span>Welcome</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/onboarding-habits.jpg" data-alt="Onboarding, Lets create a habit: add the habits you care about and shape a plan that fits your rhythm." aria-label="View the Habits screen full size"><img class="shot" src="../assets/img/liminal/screens/onboarding-habits.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">02</span>Habits</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/onboarding-sublab.jpg" data-alt="Onboarding, The Sublab: let's explore the Sublab together." aria-label="View The Sublab screen full size"><img class="shot" src="../assets/img/liminal/screens/onboarding-sublab.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">03</span>SubLab</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/onboarding-tutorial.jpg" data-alt="Onboarding, Sublab tutorial in three parts: choose a frequency base, write or record affirmations over background sound, then find the track in your Library." aria-label="View the Tutorial screen full size"><img class="shot" src="../assets/img/liminal/screens/onboarding-tutorial.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">04</span>Tutorial</p>
+          </li>
+        </ol>
+      </div>
+      <div class="block">
+        <h3 class="t3">SubLab</h3>
+        <p class="body">Pick a frequency base (Delta to Gamma), write or record your affirmations, choose a background sound, and let the Composer mix your voice in quietly underneath.</p>
+        <ol class="flow card" aria-label="SubLab flow">
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/sublab-frequencies.jpg" data-alt="Select Frequencies: Delta, Theta, Alpha, Beta and Gamma brainwave bases, each with what it is for." aria-label="View the Frequencies screen full size"><img class="shot" src="../assets/img/liminal/screens/sublab-frequencies.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">01</span>Frequencies</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/sublab-composer.jpg" data-alt="Composer: the track title, Pathway to Success, and three affirmations, with Write, Record and Iteration tabs." aria-label="View the Composer screen full size"><img class="shot" src="../assets/img/liminal/screens/sublab-composer.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">02</span>Composer</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/sublab-background-sound.jpg" data-alt="Background Sound: nature sounds, white noise and instrumental tracks, with Gentle Rainfall selected." aria-label="View the Background sound screen full size"><img class="shot" src="../assets/img/liminal/screens/sublab-background-sound.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">03</span>Background sound</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/sublab-confirm.jpg" data-alt="Final touch: confirm the Pathway to Success subliminal, with the option to convert it to ultrasound, then generate it." aria-label="View the Final touch screen full size"><img class="shot" src="../assets/img/liminal/screens/sublab-confirm.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">04</span>Final touch</p>
+          </li>
+        </ol>
+      </div>
+      <div class="block">
+        <h3 class="t3">Meditation</h3>
+        <p class="body">Choose guided, to follow a voice, or solo, to build your own session from sound, a base frequency, affirmations and a timer.</p>
+        <ol class="flow card" aria-label="Meditation flow">
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/meditation.jpg" data-alt="Lets Meditate: choose Guided, to follow a voice, or Solo, for just the sound, with a featured evening session." aria-label="View the Guided or solo screen full size"><img class="shot" src="../assets/img/liminal/screens/meditation.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">01</span>Guided or solo</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/meditation-solo.jpg" data-alt="Solo setup: a checklist of audio, ambiance, base frequency, affirmations and a 20 minute timer, then Begin session." aria-label="View the Solo setup screen full size"><img class="shot" src="../assets/img/liminal/screens/meditation-solo.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">02</span>Solo setup</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/meditation-player.jpg" data-alt="Now playing: Pathway to Success on an Alpha base, with Gentle Rainfall on loop." aria-label="View the Now playing screen full size"><img class="shot" src="../assets/img/liminal/screens/meditation-player.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">03</span>Now playing</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/meditation-finished.jpg" data-alt="Session complete: That's twelve minutes. Nothing to do now, just notice how you feel. Shows a 7 day streak and 3.2 hours this week." aria-label="View the Session complete screen full size"><img class="shot" src="../assets/img/liminal/screens/meditation-finished.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">04</span>Session complete</p>
+          </li>
+        </ol>
+      </div>
+      <div class="block">
+        <h3 class="t3">Journal</h3>
+        <p class="body">Pick habits from templates, log your mood, see your streaks and progress, and write your daily diary.</p>
+        <ol class="flow card" aria-label="Journal flow">
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/habit-templates.jpg" data-alt="Habit Templates: recommended, most popular and high-outcome habits, filtered by category, then Plant your seeds." aria-label="View the Habit templates screen full size"><img class="shot" src="../assets/img/liminal/screens/habit-templates.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">01</span>Habit templates</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/journal-mood.jpg" data-alt="Mood: how did today feel, on a five-step scale from very low to great, with the week so far." aria-label="View the Mood screen full size"><img class="shot" src="../assets/img/liminal/screens/journal-mood.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">02</span>Mood</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/habit-statistics.jpg" data-alt="Statistics: day streak, sessions, hours this week and minutes calm, a weekly completion chart, and achievement badges." aria-label="View the Statistics screen full size"><img class="shot" src="../assets/img/liminal/screens/habit-statistics.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">03</span>Statistics</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/journal-write.jpg" data-alt="Diary: today's entry, tagged Calm, Focus and Grateful." aria-label="View the Diary screen full size"><img class="shot" src="../assets/img/liminal/screens/journal-write.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">04</span>Diary</p>
+          </li>
+        </ol>
+      </div>
+      <div class="block">
+        <h3 class="t3">Profile &amp; Community</h3>
+        <p class="body">See your streaks and achievements, post your own affirmations or save others', and search posts by topic.</p>
+        <ol class="flow card" aria-label="Profile and Community flow">
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/profile.jpg" data-alt="Profile: day streak and best streak, achievement badges, and recent posts." aria-label="View the Profile screen full size"><img class="shot" src="../assets/img/liminal/screens/profile.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">01</span>Profile</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/community.jpg" data-alt="Community: a feed of posts that share affirmation recordings, with likes, comments and sharing." aria-label="View the Community screen full size"><img class="shot" src="../assets/img/liminal/screens/community.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">02</span>Community</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/community-post.jpg" data-alt="New post: write what's going on, then attach an affirmation, a voice note or a mood." aria-label="View the New post screen full size"><img class="shot" src="../assets/img/liminal/screens/community-post.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">03</span>New post</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/liminal/screens/community-search.jpg" data-alt="Community search, with recent searches." aria-label="View the Search screen full size"><img class="shot" src="../assets/img/liminal/screens/community-search.jpg" alt="" width="804" height="1748" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">04</span>Search</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ========================================================== REFLECTION -->
+    <!-- DRAFT: J to review. Drafted only from this page's testing results and onboarding notes. -->
+    <section id="reflection" class="section">
+      <div class="section-head">
+        <h2 class="t2">Reflection</h2>
+        <p class="body">Testing early showed us where people got lost. In both rounds, creating a track in SubLab was the hardest task. The redesign helped: 2 of 6 people finished it with no trouble in round 2, against none of 5 in round 1. But it was still the weakest task, and that remaining confusion shaped the final onboarding, which now walks people through SubLab step by step. The biggest lesson for me: when a feature is unfamiliar, the design has to explain it, not just display it.</p>
+      </div>
+    </section>
+    <!-- /DRAFT -->
+
+  </main>
+</div>
+
+<dialog class="lightbox" aria-label="Full-size image">
+  <button class="lightbox__close" type="button">Close</button>
+  <div class="lightbox__stage"><img alt=""></div>
+</dialog>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div>
+      <p class="site-footer__display">THANKS FOR VISITING</p>
+      <p class="site-footer__sub">Let's keep in touch!</p>
+    </div>
+    <div class="site-footer__cols">
+      <div>
+        <h2>Connect</h2>
+        <ul>
+          <li><a href="mailto:jamyanart@gmail.com">Email</a></li>
+          <li><a href="https://www.linkedin.com/in/jbatnyam" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href="../Jamiyan_Batnyam_Resume.pdf" target="_blank" rel="noopener">Resume</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>My Work</h2>
+        <ul>
+          <li><a href="liminal.html" aria-current="page">Liminal</a></li>
+          <li><a href="vibe-coding.html">Motorcycle Dashboard</a></li>
+          <li><a href="content-plus.html">ContentPlus</a></li>
+          <li><a href="finra-scadpro.html">FINRA x SCADpro</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <button class="footer-btn" type="button" id="copy-email" data-email="jamyanart@gmail.com" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span id="copy-email-label">Copy email</span>
+      </button>
+      <a class="footer-btn footer-btn--plain" href="#top">Back to top &uarr;</a>
+      <span class="footer-status" role="status" id="footer-status"></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var hasIO = "IntersectionObserver" in window;
+
+  /* ---------------------------------------------------------------- videos */
+  // HTML ships with controls (works without JS). With JS and motion allowed,
+  // recordings autoplay muted while on screen; with reduced motion they wait
+  // for the visitor to press play.
+  var vids = document.querySelectorAll("video[data-autoplay]");
+  function applyVideoMotion() {
+    Array.prototype.forEach.call(vids, function (v) {
+      v.controls = reduce.matches;
+      if (reduce.matches) v.pause();
+    });
+  }
+  applyVideoMotion();
+  if (reduce.addEventListener) reduce.addEventListener("change", applyVideoMotion);
+  if (hasIO) {
+    var vio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && !reduce.matches) {
+          var p = e.target.play();
+          if (p && p.catch) p.catch(function () { e.target.controls = true; });
+        } else {
+          e.target.pause();
+        }
+      });
+    }, { threshold: 0.25 });
+    Array.prototype.forEach.call(vids, function (v) { vio.observe(v); });
+  }
+
+
+  /* ---------------------------------------------------------- full-size viewer */
+  var box = document.querySelector(".lightbox");
+  if (box && typeof box.showModal === "function") {
+    var boxImg = box.querySelector("img");
+    var opener = null;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-full]"), function (btn) {
+      btn.addEventListener("click", function () {
+        opener = btn;
+        boxImg.src = btn.getAttribute("data-full");
+        boxImg.alt = btn.getAttribute("data-alt") || "";
+        boxImg.classList.toggle("is-shot", btn.classList.contains("flow__open"));
+        box.showModal();
+        box.querySelector(".lightbox__close").focus();
+      });
+    });
+    box.querySelector(".lightbox__close").addEventListener("click", function () { box.close(); });
+    box.addEventListener("click", function (e) { if (e.target !== boxImg) box.close(); });
+    box.addEventListener("close", function () {
+      boxImg.removeAttribute("src");
+      if (opener) opener.focus();
+    });
+  } else {
+    // No <dialog> support: open the image in a new tab instead.
+    Array.prototype.forEach.call(document.querySelectorAll("[data-full]"), function (btn) {
+      btn.addEventListener("click", function () { window.open(btn.getAttribute("data-full"), "_blank", "noopener"); });
+    });
+  }
+
+  /* ---------------------------------------------------------- rail scrollspy */
+  var links = Array.prototype.slice.call(document.querySelectorAll(".rail a"));
+  var targets = links.map(function (a) { return document.querySelector(a.getAttribute("href")); })
+                     .filter(Boolean);
+  function atBottom() {
+    return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+  }
+  function setActive(id) {
+    links.forEach(function (a) {
+      if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "true");
+      else a.removeAttribute("aria-current");
+    });
+  }
+  if (hasIO && targets.length) {
+    var sio = new IntersectionObserver(function (entries) {
+      var vis = entries.filter(function (e) { return e.isIntersecting; })
+                       .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+      if (atBottom()) setActive(targets[targets.length - 1].id);
+      else if (vis.length) setActive(vis[0].target.id);
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    targets.forEach(function (t) { sio.observe(t); });
+    setActive(targets[0].id);
+    // The last section is short and can't reach the trigger band; mark it at page bottom.
+    window.addEventListener("scroll", function () {
+      if (atBottom()) setActive(targets[targets.length - 1].id);
+    }, { passive: true });
+  }
+
+  /* Keep the active link in view when the rail is a horizontal strip (mobile). */
+  var railNav = document.querySelector(".rail__nav");
+  if (railNav) {
+    var centreActive = function () {
+      if (railNav.scrollWidth <= railNav.clientWidth) return;
+      var cur = railNav.querySelector("[aria-current]");
+      if (!cur) return;
+      var navBox = railNav.getBoundingClientRect(), curBox = cur.getBoundingClientRect();
+      railNav.scrollTo({
+        left: railNav.scrollLeft + (curBox.left - navBox.left) - navBox.width / 2 + curBox.width / 2,
+        behavior: "auto"
+      });
+    };
+    var mo = new MutationObserver(centreActive);
+    links.forEach(function (a) { mo.observe(a, { attributes: true, attributeFilter: ["aria-current"] }); });
+  }
+
+  /* ------------------------------------------------- reading progress + time */
+  (function () {
+    var wrap = document.getElementById("rail-progress");
+    var bar  = document.getElementById("rail-bar");
+    var meta = document.getElementById("rail-meta");
+    var body = document.getElementById("main");
+    if (!wrap || !bar || !meta || !body) return;
+    var fill = bar.firstElementChild;
+    if (!fill) return;
+    /* Only show the indicator once it can actually track scrolling. */
+    wrap.hidden = false;
+
+    /* Reading time is measured from this page's own words - never hardcoded.
+       200 wpm is the common estimate for online prose. */
+    var WPM = 200;
+    var words = body.textContent.trim().split(/\s+/).filter(Boolean).length;
+    var totalMin = Math.max(1, Math.round(words / WPM));
+    meta.textContent = "0% \u00B7 " + totalMin + " min read";
+    bar.setAttribute("aria-valuetext", "0 percent read, " + totalMin + " minutes left");
+
+    var frame = 0;
+    function update() {
+      frame = 0;
+      var scrollable = body.offsetHeight - window.innerHeight;
+      var pct = scrollable > 0 ? -body.getBoundingClientRect().top / scrollable : 1;
+      if (atBottom()) pct = 1;
+      pct = Math.max(0, Math.min(1, pct));
+
+      var whole = Math.round(pct * 100);
+      var left = Math.max(0, Math.round(totalMin * (1 - pct)));
+      fill.style.transform = "scaleX(" + pct.toFixed(4) + ")";
+      bar.setAttribute("aria-valuenow", String(whole));
+      bar.setAttribute("aria-valuetext", whole + " percent read, " + left + " minutes left");
+
+      var text = whole + "% \u00B7 " + (left > 0 ? left + " min left" : "finished");
+      if (meta.textContent !== text) meta.textContent = text;
+    }
+    function schedule() { if (!frame) frame = requestAnimationFrame(update); }
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    /* rAF is frozen in a background tab, so refresh directly when the page
+       is shown again or restored from the back/forward cache. */
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) update(); });
+    window.addEventListener("pageshow", update);
+    update();
+  })();
+})();
+</script>
+
+<script>
+/* ==========================================================================
+   Motion layer — see the CSS block of the same name.
+   Content is visible by default; this script only opts in to animation.
+   ========================================================================== */
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (reduce.matches || !("IntersectionObserver" in window)) return;
+
+  /* press ring on every button that has one */
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".evidence__open, .text-button");
+    if (!btn) return;
+    btn.classList.remove("is-hit");
+    void btn.offsetWidth;
+    btn.classList.add("is-hit");
+    btn.addEventListener("animationend", function h() {
+      btn.classList.remove("is-hit");
+      btn.removeEventListener("animationend", h);
+    });
+  });
+
+  /* the viewer animates out before it actually closes */
+  var box = document.querySelector(".lightbox");
+  if (box && typeof box.close === "function") {
+    var realClose = box.close.bind(box);
+    box.close = function () {
+      if (box.classList.contains("is-closing")) return realClose();
+      box.classList.add("is-closing");
+      window.setTimeout(function () {
+        box.classList.remove("is-closing");
+        realClose();
+      }, 140);
+    };
+  }
+
+  /* reveals, once each */
+  document.documentElement.classList.add("motion-ready");
+  var groups = [
+    { sel: ".mockups img", kind: "rise" },
+    { sel: ".stats__grid .stat", kind: "scale" },
+    { sel: ".finding", kind: "rise" },
+    { sel: ".results tbody tr", kind: "row" },
+    { sel: ".delta__side", kind: "rise" },
+    /* each flow steps in on its own count, so step 1 always leads */
+    { sel: ".flow > li", kind: "rise", local: true }
+  ];
+  var marked = [];
+  groups.forEach(function (g) {
+    var els = Array.prototype.slice.call(document.querySelectorAll(g.sel));
+    els.forEach(function (el, i) {
+      var n = g.local ? Array.prototype.indexOf.call(el.parentNode.children, el) : i;
+      el.setAttribute("data-reveal", g.kind);
+      el.style.setProperty("--i", g.stagger === false ? 0 : n % 8);
+      marked.push(el);
+    });
+  });
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add("is-in");
+      io.unobserve(e.target);
+    });
+  }, { rootMargin: "0px 0px -12% 0px", threshold: 0.15 });
+  marked.forEach(function (el) { io.observe(el); });
+
+  /* anything already on screen at load shows immediately */
+  window.requestAnimationFrame(function () {
+    marked.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) el.classList.add("is-in");
+    });
+  });
+
+  /* numbers count up to exactly the value already in the markup */
+  var counters = Array.prototype.slice.call(document.querySelectorAll(".stat__num, .round__pct, .delta__num"));
+  counters.forEach(function (el) {
+    var text = el.textContent.trim();
+    var m = text.match(/^(\d+)(.*)$/);
+    if (!m) return;
+    var target = parseInt(m[1], 10), suffix = m[2], dur = 900;
+    var cio = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      cio.disconnect();
+      var start = null;
+      requestAnimationFrame(function step(t) {
+        if (start === null) start = t;
+        var p = Math.min((t - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = text;          /* land on the exact original */
+      });
+    }, { threshold: 0.6 });
+    cio.observe(el);
+  });
+}());
+</script>
+
+<script>
+/* Footer utilities. The copy button is revealed only once this runs, so it is
+   never present as a dead control when JavaScript is off. */
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------- copy the email */
+  var copyBtn = document.getElementById("copy-email");
+  var label   = document.getElementById("copy-email-label");
+  var status  = document.getElementById("footer-status");
+  if (copyBtn && label && navigator.clipboard && navigator.clipboard.writeText) {
+    copyBtn.hidden = false;
+    var resetTimer = 0;
+    copyBtn.addEventListener("click", function () {
+      var email = copyBtn.getAttribute("data-email");
+      navigator.clipboard.writeText(email).then(function () {
+        label.textContent = "Copied";
+        if (status) status.textContent = "Email address copied.";
+      }, function () {
+        label.textContent = "Press Ctrl+C";
+        if (status) status.textContent = "Copy failed. The address is " + email;
+      });
+      window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(function () {
+        label.textContent = "Copy email";
+        if (status) status.textContent = "";
+      }, 2400);
+    });
+  }
+
+})();
+</script>
+<script>
+/* Wireframe strips: an endless loop. Each strip's screens are cloned once
+   (hidden from assistive tech), so half the track is one whole set. Runs
+   after the footer script, and follows its motion-off class from then on:
+   while motion is reduced the strips are plain scrollers again. */
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var SPEED = 40;   /* px per second, whatever the screen size */
+  var strips = Array.prototype.slice.call(document.querySelectorAll(".ticker--wireframes"));
+  if (!strips.length) return;
+
+  strips.forEach(function (strip) {
+    var track = strip.querySelector(".ticker__track");
+    Array.prototype.slice.call(track.children).forEach(function (li) {
+      var copy = li.cloneNode(true);
+      copy.setAttribute("aria-hidden", "true");
+      copy.setAttribute("data-clone", "");
+      track.appendChild(copy);
+    });
+  });
+
+  var sync = function () {
+    var loop = !root.classList.contains("motion-off");
+    strips.forEach(function (strip) {
+      var track = strip.querySelector(".ticker__track");
+      var view = strip.querySelector(".ticker__viewport");
+      var label = view.getAttribute("data-label") || view.getAttribute("aria-label");
+      view.setAttribute("data-label", label);
+      strip.classList.toggle("is-looping", loop);
+      if (loop) {
+        /* nothing to scroll by hand while it loops, so no tab stop */
+        view.removeAttribute("tabindex");
+        view.setAttribute("aria-label", label.replace(/, scrollable$/, ""));
+        track.style.animationDuration = (track.scrollWidth / 2 / SPEED).toFixed(1) + "s";
+      } else {
+        view.setAttribute("tabindex", "0");
+        view.setAttribute("aria-label", label);
+      }
+    });
+  };
+  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["class"] });
+  var phone = window.matchMedia("(max-width: 760px)");
+  if (phone.addEventListener) phone.addEventListener("change", sync);
+  sync();
+}());
+</script>
+<script type="module" src="../assets/celestial.js"></script>
+</body>
+</html>

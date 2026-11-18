@@ -1,0 +1,75 @@
+/* Shared by the frozen lake's rooms (b-rooms.js): the pan, the snowy shore, ice tiles and how
+   things settle in. The pan moves the lake (stage and hero) by the same distance as the shore
+   coming in after it (--lake-pan up for the north shore, --work-pan across for the east one, set
+   by the rooms, and --play-pan up for the south one), so they stay joined; each shore's last 56 px fade over the lake's own snowy edge
+   so there's no seam. */
+/* Motion: one small scale for the lake and its rooms (the site's pages use the same names).
+   --mo-fast    answers the pointer: hover, press, colour
+   --mo-mid     small things changing: docks, labels, swaps
+   --mo-slow    content arriving
+   --mo-travel  the camera, lake to shore and back (b-rooms.js sets it from TRAVEL, its one source)
+   --mo-ease       quick start, soft landing: everything that answers you or arrives
+   --mo-ease-move  eases in and out: only the camera, which travels between two resting places
+   Only transform, opacity and colour ever animate, so nothing reflows mid-move. */
+:root {--mo-fast:160ms;--mo-mid:240ms;--mo-slow:400ms;--mo-travel:800ms;--mo-ease:cubic-bezier(.22,1,.36,1);--mo-ease-move:cubic-bezier(.65,0,.35,1);}
+html.in-lake-room {overflow:hidden;}
+.lake-room,.work-room,.play-room {--ink:#F3F2EE;--muted:#B9BDC8;--warm:#FFB38F;--flame:#FF8A4C;
+  --tile:rgba(170,205,235,.1);--tile-line:rgba(210,235,255,.22);--tile-hi:rgba(225,242,255,.42);
+  position:fixed;inset:0;z-index:30;color:var(--ink);}
+.lake-room[hidden],.work-room[hidden],.play-room[hidden] {display:none;}
+.aurora-hero {transition:transform var(--mo-travel) var(--mo-ease-move);}
+.stage {transition:transform var(--mo-travel) var(--mo-ease-move),opacity var(--mo-slow) var(--mo-ease);}
+html[data-room="north"] :is(.stage,.aurora-hero) {transform:translateY(var(--lake-pan));}
+html[data-room="east"] :is(.stage,.aurora-hero) {transform:translateX(calc(-1 * var(--work-pan)));}
+html[data-room="south"] :is(.stage,.aurora-hero) {transform:translateY(calc(-1 * var(--play-pan)));}
+html.in-lake-room .stage::after {transition:opacity var(--mo-travel) var(--mo-ease-move);}
+html[data-room] .stage::after {opacity:0;}
+html.in-lake-room .labbar {opacity:0;pointer-events:none;transition:opacity var(--mo-mid) var(--mo-ease);}
+html[data-room] :is(.lake-about,.hero-copy,.tag,.flame-overlay) {opacity:0;transition:opacity var(--mo-mid) var(--mo-ease);}
+html.lake-room-instant :is(.stage,.aurora-hero,.lake-room__field,.lake-room__dock,.work-room__field,.work-dock,.play-room__field,.play-dock),
+html.lake-room-instant .stage::after {transition:none !important;}
+
+/* The shore: the same night snow as the lake's edge (measured from it), lit by the aurora, with a
+   fine grain and a few glints. */
+.shore {overflow:hidden;background:#2F3C4E;}
+.shore::before {content:"";position:absolute;inset:-10%;pointer-events:none;
+  background:radial-gradient(42% 38% at 24% 26%,rgba(86,214,176,.16),transparent 70%),radial-gradient(38% 34% at 74% 18%,rgba(132,112,226,.13),transparent 70%),
+    radial-gradient(50% 40% at 56% 78%,rgba(74,170,200,.12),transparent 72%);
+  animation:shore-aurora 22s ease-in-out infinite alternate;}
+.shore::after {content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;mix-blend-mode:soft-light;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(circle,rgba(235,246,255,.9) 0 1px,transparent 1.6px) 0 0/139px 151px,radial-gradient(circle,rgba(235,246,255,.7) 0 1px,transparent 1.6px) 61px 47px/97px 113px;}
+@keyframes shore-aurora {from {transform:translate(-3%,1%);} to {transform:translate(3%,-2%);}}
+
+.room-icon {width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+/* Things rise into place the first time they're seen: a short rise, a quick stagger that stops
+   growing after a few items (translate, so a card's hover lift, which uses transform, still
+   works afterwards). */
+.room-unit {opacity:0;}
+.room-unit.is-in {animation:room-in var(--mo-slow) var(--mo-ease) calc(min(var(--d,0),5) * 50ms) both;}
+@keyframes room-in {from {opacity:0;translate:0 12px;} to {opacity:1;translate:0 0;}}
+/* Press feedback, the same on everything you can press: it gives a little (scale, so it adds to
+   a hover lift instead of replacing it). */
+:is(.room-card,.room-back,.room-stop,.work-tile,.work-cta,.work-next,.work-dock__back,.play-exhibit,.lake-about):active {scale:.98;}
+
+/* Ice tiles lying in the snow, with a little snow settled along their top edge. */
+.ice,.room-well,.room-card,.room-event {position:relative;background:var(--tile);border:1px solid var(--tile-line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 18px 40px rgba(8,14,26,.38);backdrop-filter:blur(10px) saturate(1.1);-webkit-backdrop-filter:blur(10px) saturate(1.1);}
+/* (a drift: a thin base with rounded lumps of two sizes along it, tapering at the ends) */
+:is(.ice,.room-well,.room-card,.room-event)::before {content:"";position:absolute;left:var(--cap-x,14px);top:-6px;width:var(--cap-w,44%);height:10px;pointer-events:none;
+  background:radial-gradient(9px 7px at 50% 100%,#F4F8FC 92%,transparent) 0 100%/17px 8px repeat-x,
+    radial-gradient(13px 9px at 50% 100%,#EAF1F8 92%,transparent) 7px 100%/31px 10px repeat-x,
+    linear-gradient(#EEF4F9,#D8E4EF) 0 100%/100% 4px no-repeat;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 18px),transparent);
+  filter:drop-shadow(0 2px 2px rgba(10,20,40,.3));}
+:is(.ice,.room-card,.room-event):nth-child(2n) {--cap-x:auto;--cap-w:38%;}
+:is(.ice,.room-card,.room-event):nth-child(2n)::before {right:18px;}
+:is(.ice,.room-event):nth-child(3n)::before {--cap-w:30%;}
+
+@media (prefers-reduced-motion:reduce) {
+  .room-unit {opacity:1;}
+  .room-unit.is-in {animation:none;}
+  .shore::before {animation:none;}
+  /* Nothing slides or eases: states change at once. */
+  .lake-room *,.work-room *,.play-room *,.lake-about {transition-duration:1ms !important;transition-delay:0ms !important;animation-duration:1ms !important;}
+}

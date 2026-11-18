@@ -1,0 +1,1506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frozen Lake · Aurora lab</title>
+<link rel="icon" href="../../favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="stylesheet" href="../hero-lab/lab.css">
+<link rel="stylesheet" href="aurora.css">
+<link rel="stylesheet" href="b-rooms.css">
+<link rel="stylesheet" href="b-about.css">
+<link rel="stylesheet" href="b-work.css">
+<link rel="stylesheet" href="../../assets/sc-findings.css">
+<link rel="stylesheet" href="b-play.css">
+<link rel="stylesheet" href="../crawler/crawler.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+<style>
+  /* Projects under the ice are real links too, for keyboard and screen readers. */
+  .under a {
+    position: fixed; z-index: 11; border-radius: 18px; outline: none; color: transparent; font-size: 0;
+    pointer-events: none;
+  }
+  .under a:focus-visible { box-shadow: 0 0 0 2px #F3F2EE; }
+  .under a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  /* The headline text is drawn into the lake scene (frosted, melting under the flame); the real
+     text stays in the page, invisible, for layout, selection and screen readers. */
+  .frost-text { color: transparent !important; }
+  /* The scene draws its own shade behind the copy, so the drawn text isn't dimmed by it. */
+  .stage::after { display: none; }
+  /* The flame is the cursor across the whole hero. */
+  @media (pointer: fine) { .aurora-hero, .aurora-hero *, .stage canvas { cursor: none !important; } }
+  /* Lab bar: a switch for how the body text frosts (for comparing; not part of the concept). */
+  .labbar .opts { display: inline-flex; align-items: center; gap: 2px; padding: 0 2px 0 10px; opacity: 1; overflow: visible; }
+  .labbar .opts button {
+    all: unset; cursor: pointer; padding: 7px 10px; border-radius: 999px; color: #fff; opacity: .65;
+    font: inherit;
+  }
+  .labbar .opts button:hover { opacity: 1; }
+  .labbar .opts button[aria-pressed="true"] { opacity: 1; background: rgba(255, 255, 255, .16); }
+  .labbar .opts button:focus-visible { box-shadow: 0 0 0 2px #FFB38F; }
+  /* One screen: nothing below the lake, and no scrolling (or overscroll bounce). */
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  /* The flame sits above the real body copy as well as the textured name. */
+  .flame-overlay { position: fixed; inset: 0; z-index: 14; pointer-events: none; }
+  .tag { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(8, 12, 22, .9); }
+  @media (max-width: 760px) {
+    .labbar { flex-wrap: wrap; justify-content: center; width: max-content; border-radius: 20px; }
+    .labbar .hint { display: none; }
+    .labbar .opts { flex-basis: 100%; justify-content: center; padding: 0; }
+  }
+  /* First paint: the lake and its copy arrive together, once the ice and what's under it have
+     loaded, instead of popping in piece by piece. */
+  .lake-loading :is(.stage, .hero-copy, .lake-about, .labbar, .flame-overlay) { opacity: 0; }
+  .hero-copy, .labbar { transition: opacity var(--mo-slow) var(--mo-ease); }
+  /* For people trying the page: a one-line hint, no lab tools, no TODO headline. */
+  .no-lab .labbar > :not(.hint) { display: none; }
+  .no-lab .labbar .hint { display: block; white-space: normal; text-align: center; }
+  .no-lab .hero-copy .todo { display: none; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<p class="fallback">This concept needs WebGL.</p>
+<script type="module">
+import {
+  THREE, AURORA_GLSL, auroraUniforms, auroraController, mountPage, makeTag,
+  WORK, PLAYGROUND, IMG, workHref, reducedMotion, damp,
+} from './aurora.js';
+import { mountLakeRooms } from './b-rooms.js';
+import { paintCrawler } from '../crawler/crawler.js';
+
+// Seen from straight above: a frozen lake at night. The cursor is a warm hand that melts the
+// ice; the dark water underneath mirrors the aurora overhead, and the projects frozen under
+// the ice come through sharp where it has melted. The ice slowly freezes over again.
+//
+// Each frame runs three light passes instead of one heavy one:
+//   1. melt: a small simulation on the GPU; the cursor's path since the last frame melts at
+//      once, and everything slowly refreezes from the edges in;
+//   2. aurora: the reflection overhead, at half resolution (it's soft anyway);
+//   3. composite: the lake as you see it, using the ice drawn once (below) and drawing the
+//      water and the projects only where the ice is open.
+// The ice itself (clear, with snow at the shore and the projects blurred under it) is drawn
+// once at full sharpness whenever the window changes size.
+const { hero, copy } = mountPage('Melt the ice or the name · double-click to flare · click a project');
+document.querySelector('.aurora-after').remove(); // (one screen: nothing to scroll down to)
+// The lab tools are J's: they show locally (or with ?lab). People trying the page get a one-line
+// hint, and the headline's TODO box stays out of the way until J writes it. (?public previews
+// that locally.)
+const query = new URLSearchParams(location.search);
+const lab = query.has('lab') || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !query.has('public'));
+if (!lab) {
+  document.documentElement.classList.add('no-lab');
+  document.title = 'Jamiyan Batnyam — UX / Product Designer, SCAD 2027';
+  if (matchMedia('(pointer: coarse)').matches) document.querySelector('.labbar .hint').textContent = 'Tap to melt · tap again to open · double-tap to flare';
+}
+// The case studies are right here, on the east shore.
+copy.querySelector('.actions .pill').href = '#/work/liminal';
+const stageEl = document.getElementById('stage');
+const tag = makeTag();
+const now = () => performance.now();
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+} catch (err) {
+  document.documentElement.classList.add('no-webgl');
+  throw err;
+}
+// Keep baked ice and text sharp even when the animated output changes resolution.
+const detailScale = Math.min(devicePixelRatio, 2);
+// Profiling at 1440×900: the composite dominates GPU time. 1.5× output removes
+// 44% of its DPR-2 fragments while the static ice/text sources retain 2× detail.
+let scale = Math.min(detailScale, 1.5);
+renderer.setPixelRatio(scale);
+// First paint: hold everything back until the textures are in (1.5 s at most), then let it all
+// fade in together (see .lake-loading).
+document.documentElement.classList.add('lake-loading');
+{
+  let shown = false;
+  const arrive = () => {
+    if (shown) return;
+    shown = true;
+    needsBake = true; invalidate();
+    requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('lake-loading')));
+  };
+  THREE.DefaultLoadingManager.onLoad = arrive;
+  setTimeout(arrive, 1500);
+}
+stageEl.append(renderer.domElement);
+
+// ---------- What's under the ice ----------
+const loader = new THREE.TextureLoader();
+const byId = Object.fromEntries(WORK.map((w) => [w.id, w]));
+// What stands for each project under the ice. The motorcycle dashboard is its own round display;
+// FINRA shows only its public summary image. Liminal and ContentPlus are their own cut-out artwork
+// (the lab bar's Objects switch compares them with the phone screens they started as): Liminal's
+// onboarding doorway, a figure walking into the light (the name means an in-between space), and
+// Koko, asleep in the ice until you melt him awake. Both come full size from J's Figma files
+// (art/: the doorway's flat background cut away, Koko as drawn), not the small web versions.
+const ART = {
+  doorway: { src: 'art/liminal-doorway.png', aspect: 1086 / 1448 },
+  koko: { src: 'art/koko-sleep.png', aspect: 1 },
+  kokoAwake: { src: 'art/koko-wave.png', aspect: 1 },
+};
+const artTex = Object.fromEntries(Object.entries(ART).map(([k, a]) => [k, loader.load(a.src, () => { needsBake = true; invalidate(); })]));
+const CARDS = [
+  { ...byId.liminal, src: 'liminal/screens/meditation-player.jpg', shape: 0 },
+  { ...byId['content-plus'], src: 'content-plus/screens/videos-home.jpg', shape: 0 },
+  { ...byId.hmi, src: 'vibe-coding/screens/settings.png', shape: 1 },
+  { ...byId.finra, src: 'framer/j90JLu2USyq46GRLYCzX1TgsCc-1024.webp', shape: 2 },
+  // The basketball: melt it free and the view pans down to the playground, the 3D studio, in the
+  // south room (it used to leave for the Playground page).
+  { ...PLAYGROUND, room: '#/playground', glow: '#FF8A4C', shape: 3 },
+  // A crawler frozen mid-stride (prototypes/crawler): melt it free and it opens the same room at
+  // the notes it climbs out onto.
+  { title: 'Crawler', room: '#/playground/crawler', glow: '#9EF0D6', shape: 4, sprite: true, aspect: 2, flag: 2 },
+  // SoundCloud: the redesigned player we tested, on a phone (the case study's own screen); melt it
+  // free and it opens its room on the east shore.
+  { id: 'soundcloud', title: 'SoundCloud', sub: 'UX research case study', src: 'soundcloud/screens/player.jpg', shape: 0, aspect: 804 / 1740, glow: '#FF5500' },
+].map((c) => ({
+  ...c,
+  heat: 0,
+  tex: c.src ? loader.load(IMG + c.src, () => { needsBake = true; invalidate(); }) : c.sprite ? crawlerTexture() : null,
+  glowColor: new THREE.Color(c.glow),
+}));
+CARDS.forEach((c) => { c.screen = { tex: c.tex, shape: c.shape, aspect: c.aspect }; });
+
+function crawlerTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 256;
+  paintCrawler(cv.getContext('2d'), 512, 256);
+  return new THREE.CanvasTexture(cv);
+}
+
+// ---------- Shared uniforms and GLSL ----------
+const u = {
+  ...auroraUniforms(),
+  uRes: { value: new THREE.Vector2(1, 1) },   // size of the target being drawn
+  uView: { value: new THREE.Vector2(1, 1) },  // CSS size of the screen
+  uCard0: { value: CARDS[0].tex },
+  uCard1: { value: CARDS[1].tex },
+  uCard2: { value: CARDS[2].tex },
+  uCard3: { value: CARDS[3].tex },
+  uCard4: { value: CARDS[5].tex },
+  uCard5: { value: artTex.kokoAwake },
+  uCard6: { value: CARDS[6].tex },
+  uRect: { value: CARDS.map(() => new THREE.Vector4()) },
+  uMeta: { value: CARDS.map(() => new THREE.Vector4()) },
+  uGlow: { value: CARDS.map((c) => c.glowColor) },
+  uLake: { value: new THREE.Vector4(0, 0, 1, 1) },
+};
+
+const COMMON = /* glsl */ `
+  uniform vec2 uRes;
+  uniform vec2 uView;
+  uniform sampler2D uCard0, uCard1, uCard2, uCard3, uCard4, uCard5, uCard6;
+  uniform vec4 uRect[7];  // centre xy, half size zw (screen units: height = 1)
+  uniform vec4 uMeta[7];  // angle, shape (0 phone, 1 round, 2 wide screen, 3 ball, 4 cut-out), heat, flag (1 wakes, 2 thin)
+  uniform vec3 uGlow[7];
+  uniform vec4 uLake;     // centre xy, half size zw of the lake
+  ${AURORA_GLSL}
+
+  // Screen units: height = 1, centre = 0, y up.
+  vec2 screenP() { return (gl_FragCoord.xy / uRes - .5) * vec2(uView.x / uView.y, 1.); }
+  mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, s, -s, c); }
+  float sdBox(vec2 p, vec2 b, float r) { vec2 q = abs(p) - b + r; return length(max(q, 0.)) + min(max(q.x, q.y), 0.) - r; }
+  float fbm5(vec2 p) {
+    float v = 0., a = .5;
+    for (int i = 0; i < 5; i++) { v += a * vnoise(p); p = p * 2.02 + vec2(3.1, 1.7); a *= .5; }
+    return v;
+  }
+  float lakeDist(vec2 p) { return sdBox(p - uLake.xy, uLake.zw, .14) + (fbm3(p * 4.) - .5) * .07 + (fbm5(p * 22.) - .5) * .012; }
+
+  vec3 sampleCard(int i, vec2 uv, float bias) {
+    vec3 c = texture2D(uCard3, uv, bias).rgb;
+    if (i == 0) c = texture2D(uCard0, uv, bias).rgb;
+    else if (i == 1) c = texture2D(uCard1, uv, bias).rgb;
+    else if (i == 2) c = texture2D(uCard2, uv, bias).rgb;
+    else if (i == 6) c = texture2D(uCard6, uv, bias).rgb;
+    return c;
+  }
+  // A cut-out's own colour and alpha. Koko (flag 1) wakes as he's melted: his sleeping pose gives
+  // way to a wave once the water over him is open.
+  vec4 sampleSprite(int i, vec2 uv, float bias) {
+    vec4 t = texture2D(uCard4, uv, bias);
+    if (i == 0) t = texture2D(uCard0, uv, bias);
+    else if (i == 1) t = mix(texture2D(uCard1, uv, bias), texture2D(uCard5, uv, bias), smoothstep(.45, .75, uMeta[i].z) * step(.5, uMeta[i].w) * step(uMeta[i].w, 1.5));
+    return t;
+  }
+  // One thing under the ice: colour and coverage, plus its outline distance.
+  vec4 card(int i, vec2 p, float bias, out float edge) {
+    vec4 r = uRect[i];
+    vec2 d = rot(-uMeta[i].x) * (p - r.xy);
+    float shape = uMeta[i].y;
+    float aa = 1.2 / uView.y;
+    vec3 col = vec3(0.);
+    float alpha = -1.;  // (the crawler's sprite brings its own coverage)
+    if (shape > 3.5) {
+      // A cut-out (the crawler, the orb or mandala, Koko): see-through around it, its outline
+      // distance taken from its own edge (alpha 0.5) so the frost line and the glow hug it. Under
+      // the ice (the baked pass asks for a blur) they're softened with a dozen samples spread
+      // over a small disc at full detail: a coarse mipmap level would turn the art blocky. The
+      // thin-lined crawler (flag 2) is softened least.
+      vec2 uv = d / (2. * r.zw) + .5;
+      vec2 m = smoothstep(0., .03, uv) * smoothstep(1., .97, uv);
+      float inside = m.x * m.y;
+      edge = 1.;
+      alpha = 0.;
+      if (inside > 0.) {
+        vec4 t;
+        if (bias > 1.) {
+          float rb = uMeta[i].w > 1.5 ? .006 : .012;   // blur radius, as a fraction of its height
+          t = vec4(0.);
+          for (int k = 0; k < 12; k++) {
+            float a = float(k) * 2.39996, rr = rb * sqrt((float(k) + .5) / 12.);
+            t += sampleSprite(i, clamp(uv + vec2(cos(a) * r.w / r.z, sin(a)) * rr, 0., 1.), 0.);
+          }
+          t /= 12.;
+        } else t = sampleSprite(i, clamp(uv, 0., 1.), bias);
+        if (inside > .5) edge = (.5 - t.a) * .08;
+        col = t.rgb;
+        alpha = t.a * inside;
+      }
+    } else if (shape > 2.5) {
+      // The basketball: an orange sphere with its seams, lit from the top left.
+      float R = r.z, l = length(d) / R;
+      edge = length(d) - R;
+      float lit = sqrt(max(0., 1. - l * l));
+      vec2 s = d / R;
+      float seams = min(min(abs(s.x), abs(s.y)), abs(length(s - vec2(1.25, 0.)) - .9));
+      seams = min(seams, abs(length(s + vec2(1.25, 0.)) - .9));
+      col = vec3(.9, .42, .16) * (.35 + .75 * lit * (.7 + .3 * dot(normalize(vec3(s, lit + .01)), normalize(vec3(-.5, .5, .8)))));
+      col = mix(vec3(.12, .05, .02), col, smoothstep(.015, .05, seams));
+    } else {
+      vec2 b = r.zw;
+      bool round = shape > .5 && shape < 1.5;
+      float rad = round ? b.x : shape > 1.5 ? .012 : b.x * .2;
+      edge = round ? length(d) - b.x : sdBox(d, b, rad);
+      // No screen texture fetch outside this device.
+      if (edge <= aa) {
+      float bezel = .007;
+      float inner = round ? length(d) - (b.x - bezel) : sdBox(d, b - bezel, max(rad - bezel, .002));
+      vec2 uv = d / (2. * (b - bezel)) + .5;
+      col = mix(sampleCard(i, clamp(uv, 0., 1.), bias), vec3(.06, .065, .08), smoothstep(-aa, aa, inner));
+      }
+    }
+    return vec4(col, alpha >= 0. ? alpha : 1. - smoothstep(-aa, aa, edge));
+  }
+`;
+
+const VERT = 'void main() { gl_Position = vec4(position.xy, 0., 1.); }';
+const passMaterial = (fragmentShader, extra = {}) =>
+  new THREE.ShaderMaterial({ uniforms: { ...u, ...extra }, vertexShader: VERT, fragmentShader, depthTest: false, depthWrite: false });
+
+// ---------- Pass: the ice, drawn once ----------
+// Target A holds static edge grain, refreeze needles, shore snow, and optical depth;
+// target B holds the projects as seen blurred through the ice, and the shore. Colours are
+// applied per frame (they change with the sunrise).
+const ICE_DATA = /* glsl */ `${COMMON}
+  void main() {
+    vec2 p = screenP();
+    // Clear, smooth ice: a little snow where it meets the shore, and a gentle variation in depth
+    // across the lake so it doesn't read as flat paint.
+    float shoreSnow = smoothstep(.07, 0., -lakeDist(p)) * smoothstep(.4, .6, fbm5(p * 9.));
+    float snow = shoreSnow * (.65 + .35 * vnoise(p * 420.));
+    float depth = fbm5(p * 1.2 + 20.);
+    float grain = .5 + ((vnoise(p * 140.) - .5) * .03 + (vnoise(p * 40.) - .5) * .04) / .07;
+    vec2 s = vec2(28., 110.);
+    float needles = smoothstep(.56, .74, max(fbm3(p * s), max(fbm3(rot(2.094) * p * s + 3.), fbm3(rot(4.189) * p * s + 7.))));
+    gl_FragColor = vec4(grain, needles, snow, depth);
+  }`;
+
+const ICE_UNDER = /* glsl */ `${COMMON}
+  void main() {
+    vec2 p = screenP();
+    // The projects seen through the ice: blurred, dimmed, nudged as if by refraction, with a
+    // faint frosty outline so even dark screens show where they lie.
+    vec3 under = vec3(0.);
+    float a = 0.;
+    for (int i = 0; i < 7; i++) {
+      float e;
+      vec4 c = card(i, p + vec2(.005, -.007), 4.5, e);
+      under = mix(under, c.rgb, c.a);
+      a = max(a, c.a);
+      under += vec3(.5, .66, .82) * exp(-abs(e) * 260.) * .3;
+      a = max(a, exp(-abs(e) * 260.) * .5);
+    }
+    // Alpha: the shore. 0.5 is the waterline.
+    float shore = clamp(.5 + lakeDist(p) * 25., 0., 1.);
+    gl_FragColor = vec4(under * a, shore);
+  }`;
+
+// ---------- Pass: melt ----------
+const MELT = /* glsl */ `
+  uniform sampler2D uPrev;
+  uniform vec2 uSimRes;
+  uniform vec2 uView;
+  uniform vec4 uSeg[3];   // a.xy, b.xy in CSS pixels: a brush stroke since the last frame
+  uniform vec3 uSegR[3];  // radius (px), strength, on
+  uniform float uDt;
+  uniform float uRefreeze;
+  // R: warmth. Each stroke leaves a cone of it (highest along the stroke, falling off evenly to
+  // its edge), and all of it cools at the same rate, so the ice edge (warmth 0.5) creeps back
+  // in at a steady speed and stays crisp until the hole closes to a point.
+  // G: recently melted. 1 while melted, then fading over about two seconds once frozen again,
+  // so new ice can show fresh frost.
+  void main() {
+    vec2 uv = gl_FragCoord.xy / uSimRes;
+    vec4 prev = texture2D(uPrev, uv);
+    float v = max(prev.r - uDt * uRefreeze, 0.);
+    vec2 p = vec2(uv.x * uView.x, (1. - uv.y) * uView.y);
+    for (int i = 0; i < 3; i++) {
+      if (uSegR[i].z < .5) continue;
+      vec2 a = uSeg[i].xy, b = uSeg[i].zw, ab = b - a;
+      float h = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-4), 0., 1.);
+      float d = length(p - a - ab * h) / uSegR[i].x;
+      v = max(v, uSegR[i].y * max(0., 1. - d));
+    }
+    float recent = max(prev.g - uDt * .45, step(.5, v));
+    gl_FragColor = vec4(v, recent, 0., 1.);
+  }`;
+
+// ---------- Pass: the aurora overhead, mirrored ----------
+const AURORA_TOP = /* glsl */ `${COMMON}
+  // Ribbons with a sharp bright hem on one side and a long soft fade on the other, rays
+  // across them, surges travelling along them; the cursor draws the nearest one toward it.
+  void main() {
+    vec2 q = screenP();
+    float t = uTime;
+    vec3 col = vec3(0.);
+    for (int k = 0; k < 3; k++) {
+      float fk = float(k);
+      float path = .22 * sin(q.x * 1.6 + t * .08 + fk * 2.1) + .1 * sin(q.x * 3.7 - t * .12 + fk)
+                 + (fbm3(vec2(q.x * .8 + t * .02, fk * 5.)) - .5) * .5 + (fk - 1.) * .36
+                 + .025 * sin(q.x * 9. - t * .6 + fk * 4.);
+      float w = uCursor.z * exp(-pow(q.x - uCursor.x, 2.) * 6.);
+      path = mix(path, uCursor.y, w * .3);
+      float d = q.y - path;
+      float side = d > 0. ? exp(-d * 4.) : exp(d * 30.);
+      float n = .55 * vnoise(vec2(q.x * 14. + t * .3, fk)) + .45 * vnoise(vec2(q.x * 42. - t * .9, fk + 3.));
+      float rays = .2 + 1.5 * n * n;
+      float surge = 1. + .8 * pow(.5 + .5 * sin(q.x * 2. - t * .7 + fk * 1.7), 8.);
+      float ring = abs(q.x - uPulse.x) - uPulse.z * 1.2;
+      float pulse = uPulse.w * exp(-ring * ring * 20.) * exp(-uPulse.z * 1.1);
+      col += auroraColor(clamp(d * 2.2, 0., 1.), q.x * 6., t) * side * rays * surge * (k == 1 ? 1. : .55) * (1. + 2. * pulse + .6 * w);
+    }
+    gl_FragColor = vec4(col * .75 * (1. + uFlare) * (1. - smoothstep(0., .55, uDawn)), 1.);
+  }`;
+
+// ---------- Pass: what you see ----------
+const COMPOSITE = /* glsl */ `${COMMON}
+  uniform sampler2D uIce, uUnder, uAur, uMelt;
+  uniform vec4 uRipple[6];  // xy, age, strength
+  uniform vec3 uFire;       // the cursor's flame: xy (screen units), z: brightness
+  uniform vec4 uWave;       // a double-click melt wave: centre xy, edge radius, glow
+  uniform sampler2D uText;  // the name, drawn where the page lays it out (page, not screen, coordinates)
+  uniform sampler2D uBody;  // the body text's shape (eyebrow, intro), same coordinates
+  uniform vec4 uPane[2];    // the body text's blocks, in those coordinates: x0, y0, x1, y1
+  uniform vec4 uNameBounds;
+  uniform float uBodyStyle; // frost behind the body text: 0 none, 1 rime, 2 frosted glass
+  uniform vec2 uTextTexel;  // one pixel of that texture
+  uniform float uScroll;    // how far the page has scrolled, in screen heights
+  uniform float uNarrow;    // 1 on phone layouts
+  uniform float uCopyShade; // 1 at home; fades to 0 while the view is up on a shore (b-rooms.js)
+  bool inTextBounds(vec2 uv, vec4 r, vec2 pad) {
+    return r.z > r.x && all(greaterThanEqual(uv, r.xy - pad)) && all(lessThanEqual(uv, r.zw + pad));
+  }
+  void main() {
+    vec2 uv = gl_FragCoord.xy / uRes;
+    vec2 p = screenP();
+    float k1 = smoothstep(0., .55, uDawn), k2 = smoothstep(.45, 1., uDawn);
+    // The flame: its heat makes what's under the surface shimmer, and its light falls warm
+    // on the ice and the water around it.
+    float fd = length(p - uFire.xy);
+    float heat = uFire.z * exp(-fd * fd * 180.);
+    vec2 shimmer = vec2(sin(p.y * 160. + uTime * 11.), cos(p.x * 150. - uTime * 9.)) * heat;
+    float fireLight = uFire.z * (exp(-fd * fd * 90.) * .75 + exp(-fd * 9.) * .16);
+    vec3 fireCol = vec3(1., .55, .22);
+    vec4 ice4 = texture2D(uIce, uv);       // edge grain, refreeze needles, snow, depth
+    vec4 under4 = texture2D(uUnder, uv);   // blurred projects, shore
+    vec3 underBlur = texture2D(uUnder, uv + shimmer * .004).rgb;
+    float shore = smoothstep(.47, .53, under4.a);
+
+    // Melt edge: crisp at any resolution, with a slight crystalline irregularity.
+    vec4 melt4 = texture2D(uMelt, uv);
+    float heatSlope = length(vec2(dFdx(melt4.r), dFdy(melt4.r))) * (uRes.y / uView.y);
+    // Keep grain within ~1.5 CSS pixels even on a shallow, lake-wide wave.
+    float mv = melt4.r + (ice4.r - .5) * min(.07, heatSlope * 3.);
+    float aa = fwidth(mv) * 1.1 + 1e-4;
+    float m = smoothstep(.5 - aa, .5 + aa, mv) * (1. - shore);
+    // Physical-looking thickness in CSS pixels, also on the very broad flare wave.
+    vec2 edgeGrad = vec2(dFdx(mv), dFdy(mv));
+    float edgePx = (mv - .5) / max(length(edgeGrad) * (uRes.y / uView.y), 1e-5);
+    float lip = smoothstep(-3., -1., edgePx) * (1. - m) * (1. - shore);
+    float wet = smoothstep(-8., -3., edgePx) * (1. - smoothstep(-3., 0., edgePx)) * (1. - shore);
+    float overhang = (1. - smoothstep(0., 5., edgePx)) * m;
+    float edgeLight = .5 + .5 * dot(normalize(edgeGrad + 1e-5), normalize(vec2(-.5, .8)));
+
+    // Ripples bend the water.
+    vec2 bend = vec2(0.);
+    for (int i = 0; i < 6; i++) {
+      vec4 rp = uRipple[i];
+      if (rp.w < .001 || rp.z > 6.) continue;
+      vec2 dd = p - rp.xy;
+      float dist = length(dd);
+      bend += normalize(dd + 1e-5) * sin(dist * 70. - rp.z * 9.) * exp(-abs(dist - rp.z * .13) * 22.) * exp(-rp.z * 1.4) * rp.w;
+    }
+    bend += shimmer * .6;
+    vec2 swell = vec2(sin(p.y * 23. + uTime * .65), cos(p.x * 19. - uTime * .48));
+    vec3 aur = texture2D(uAur, uv + bend * .008 + swell * .0012 * m).rgb;
+
+    // Ice: clear and glassy, dark with depth, the aurora mirrored on its surface, the projects
+    // a soft blur beneath, a little snow where it meets the shore.
+    vec3 clear = mix(mix(vec3(.012, .03, .048), vec3(.36, .3, .38), k1), vec3(.8, .84, .88), k2);
+    vec3 deeper = mix(mix(vec3(.04, .07, .1), vec3(.5, .44, .5), k1), vec3(.87, .89, .92), k2);
+    vec3 ice = mix(clear, deeper, smoothstep(.3, .8, ice4.a) * .3);
+    ice += underBlur * .5 * (1. - k2 * .5);
+    ice += aur * .3;
+    ice += fireCol * fireLight * (1. - k2 * .5);
+    // a broad moonlit sheen across the glassy surface
+    ice += vec3(.06, .08, .1) * smoothstep(.9, 0., length(p - vec2(-.5, .55))) * (1. - k1);
+    vec3 snowCol = mix(mix(vec3(.3, .36, .45), vec3(.85, .72, .76), k1), vec3(.98, .97, .96), k2) + aur * .18;
+    ice = mix(ice, snowCol, ice4.b * .9);
+    // A few glints, mostly in the snow at the edges.
+    vec2 gg = uv * uView / 3.;
+    float glint = step(.9985, hash12(floor(gg))) * (.5 + .5 * sin(uTime * 3. + hash12(floor(gg) + 5.) * 30.));
+    // (the flame's light catches more of them)
+    ice += mix(vec3(.85, .95, 1.), vec3(1., .8, .55), min(heat * 3., 1.)) * glint * (.08 + .6 * ice4.b + 2.5 * heat) * (1. - k2);
+    // Newly refrozen ice: a soft frost veil, brightest just behind the freezing edge, with fine
+    // feathered needles in three directions (like frost on a window) and a few sparkles;
+    // it clears over a couple of seconds.
+    float fresh = clamp(melt4.g, 0., 1.) * (1. - m) * (1. - shore);
+    if (fresh > .001) {
+      float nearEdge = smoothstep(.32, .5, mv);
+      float needles = ice4.g;
+      float spark = step(.996, hash12(floor(uv * uView / 2.)));
+      vec3 frostCol = mix(mix(vec3(.52, .66, .8), vec3(.95, .85, .85), k1), vec3(1.), k2);
+      ice = mix(ice, frostCol, clamp(fresh * (.12 + .3 * nearEdge + .2 * needles + .6 * spark), 0., 1.));
+    }
+
+    vec3 col = ice;
+    if (m > .001) {
+      // Water: dark, mirroring the aurora and the stars, the projects clear beneath it (the
+      // reflection is lighter over them so the screens stay readable).
+      vec3 under = mix(vec3(.003, .012, .025), vec3(.55, .62, .7), k2);
+      vec3 glowCol = vec3(0.);
+      float cover = 0.;
+      for (int i = 0; i < 7; i++) {
+        float e;
+        vec4 c = card(i, p + bend * .006, -.5, e);
+        under = mix(under, c.rgb * mix(.88, 1., k2), c.a);
+        cover = max(cover, c.a);
+        glowCol += uGlow[i] * exp(-max(e, 0.) * 85.) * (1. - c.a) * uMeta[i].z;
+      }
+      vec2 sg = uv * uView / 2.;
+      float star = step(.9975, hash12(floor(sg))) * (.5 + .5 * sin(uTime * 2. + hash12(floor(sg) + 7.) * 40.));
+      vec3 water = under * .92 + aur * (.76 - .56 * cover) + vec3(.003, .018, .023) * (1. - k1)
+                 + vec3(.8, .9, 1.) * star * .22 * (1. - k1) * (1. - cover);
+      water = mix(water, mix(skyBase(vec3(0., 1., 0.)) * .9, under, .5), k1 * .7);
+      water += glowCol * .35;
+      water += fireCol * fireLight * .7;   // the flame's glow on the water
+      water *= 1. - overhang * .45;
+      col = mix(ice, water, m);
+    }
+    // The cut edge of the ice: a pale band, brightest at the top edge, glowing orange where the
+    // flame is melting it.
+    vec3 lipCol = mix(mix(vec3(.38, .55, .66), vec3(.95, .82, .8), k1), vec3(1.), k2);
+    lipCol = mix(lipCol, vec3(1., .7, .4), min(1., heat * 1.6));
+    col *= 1. - wet * .18;
+    col += aur * wet * .1;
+    col = mix(col, lipCol, lip * (.32 + .28 * edgeLight));
+
+    // Shore: snow, and a dark wet line at the waterline.
+    vec3 snow = mix(mix(vec3(.2, .25, .33), vec3(.75, .64, .7), k1), vec3(.97, .96, .94), k2)
+              * (.82 + .3 * ice4.b) + aur * .12;
+    col = mix(col, snow, shore);
+    col *= 1. - exp(-abs(under4.a - .5) * 40.) * .35;
+    // Snow throws back much more of the flame's light than ice or water: a bright warm pool,
+    // and its crystals catch it.
+    col += (fireCol * fireLight * 1.6 + vec3(1., .85, .6) * glint * heat * 4.) * shore * (1. - k2 * .6);
+
+    // The heat ring along a double-click wave's advancing edge.
+    if (uWave.w > .001) {
+      float wd = abs(length(p - uWave.xy) - uWave.z);
+      col += (fireCol * exp(-wd * 55.) * .75 + vec3(1., .8, .55) * exp(-wd * 260.) * .5) * uWave.w * (1. - shore * .5);
+    }
+
+    // Shade behind the copy (left on desktop, top on phones) so the text stays readable.
+    float night = 1. - smoothstep(.1, .6, uDawn);
+    float shade;
+    if (uNarrow > .5) {
+      float y = 1. - uv.y;
+      shade = y < .45 ? mix(.7, .2, y / .45) : mix(.2, 0., clamp((y - .45) / .15, 0., 1.));
+    } else {
+      float x = uv.x;
+      shade = x < .38 ? mix(.62, .25, x / .38) : mix(.25, 0., clamp((x - .38) / .17, 0., 1.));
+    }
+    col = mix(col, vec3(.008, .02, .047), shade * night * uCopyShade);
+
+    vec2 tuv = uv - vec2(0., uScroll);
+
+    // Frost behind the body text, which stays crisp page text on top. Rime clings around the
+    // letters (a crust of crystals and snow on their tops) without covering them; frosted glass
+    // is an icy pane behind each block. The flame melts either, like the ice.
+    float bodyFrost = (1. - smoothstep(.36, .52, melt4.r + (vnoise(p * 140.) - .5) * .04)) * step(.5, uBodyStyle);
+    vec2 bodyPad = vec2(30., 24.) / uView;
+    bool overBody = inTextBounds(tuv, uPane[0], bodyPad) || inTextBounds(tuv, uPane[1], bodyPad);
+    if (bodyFrost > .001 && overBody) {
+      vec2 sN = vec2(42., 170.);
+      float needlesB = smoothstep(.5, .72, max(fbm3(p * sN), max(fbm3(rot(2.094) * p * sN + 3.), fbm3(rot(4.189) * p * sN + 7.))));
+      vec3 icyB = mix(vec3(.66, .8, .94), vec3(1.), needlesB * .55);
+      if (uBodyStyle < 1.5) {
+        float own = texture2D(uBody, tuv).a;
+        float near = 0.;
+        for (int i = 0; i < 8; i++) {
+          float a = float(i) * .785398 + .39;
+          vec2 dir = vec2(cos(a), sin(a)) * uTextTexel;
+          near = max(near, texture2D(uBody, tuv + dir * 1.4).a * .9);
+          near = max(near, texture2D(uBody, tuv + dir * 2.8).a * .5);
+        }
+        float below = max(texture2D(uBody, tuv - vec2(0., uTextTexel.y * 1.6)).a, texture2D(uBody, tuv - vec2(0., uTextTexel.y * 3.)).a);
+        float cap = below * (1. - own) * smoothstep(.4, .7, vnoise(p * 320.));
+        // Kept light, so the small text reads as easily as with no frost.
+        float rimeB = max(near * (1. - own) * (.12 + .3 * needlesB), cap * .7);
+        col = mix(col, icyB, rimeB * bodyFrost);
+      } else {
+        for (int i = 0; i < 2; i++) {
+          vec4 r = uPane[i];
+          if (r.z <= r.x) continue;
+          vec2 q = (tuv - (r.xy + r.zw) * .5) * uView;   // CSS pixels from the block's centre
+          float d = sdBox(q, (r.zw - r.xy) * .5 * uView + vec2(18., 12.), 14.);
+          float inside = 1. - smoothstep(-1., 1., d);
+          vec3 glass = mix(col, vec3(.15, .21, .29), .6) + icyB * needlesB * .1;
+          float rim = exp(-abs(d) * .7) * .45;
+          col = mix(col, glass, inside * bodyFrost) + vec3(.55, .7, .86) * rim * bodyFrost;
+        }
+      }
+    }
+
+    // The name, frosted over: icy letters with a crust of crystals just around them. Where
+    // the flame has melted the lake it melts the frost too (slightly sooner than the ice),
+    // leaving the name crisp in its own colour, and the frost grows back as it refreezes.
+    if (inTextBounds(tuv, uNameBounds, vec2(6.) / uView)) {
+    vec4 txt = texture2D(uText, tuv);
+    // Crust: the letters grown by about 3 px (two rings of samples).
+    float crust = txt.a;
+    for (int i = 0; i < 8; i++) {
+      float a = float(i) * .785398 + .39;
+      vec2 dir = vec2(cos(a), sin(a)) * uTextTexel;
+      crust = max(crust, texture2D(uText, tuv + dir * 1.6).a * .9);
+      crust = max(crust, texture2D(uText, tuv + dir * 3.2).a * .7);
+    }
+    if (crust > .002) {
+      float frostAmt = 1. - smoothstep(.36, .52, melt4.r + (vnoise(p * 140.) - .5) * .04);
+      vec3 ink = txt.rgb / max(txt.a, 1e-3);
+      vec3 melted = ink + fireCol * heat * .25;
+      vec3 tcol = melted;
+      float ta = txt.a;
+      if (frostAmt > .001) {
+        // Frost needles, rime inside the letters, and snow settled on their top edges.
+        vec2 s = vec2(42., 170.);
+        float n1 = fbm3(p * s), n2 = fbm3(rot(2.094) * p * s + 3.), n3 = fbm3(rot(4.189) * p * s + 7.);
+        float needles = smoothstep(.5, .72, max(n1, max(n2, n3)));
+        float rime = fbm3(p * 260.);
+        float spark = step(.99, hash12(floor(uv * uView / 2.)));
+        float below = max(texture2D(uText, tuv - vec2(0., uTextTexel.y * 1.8)).a, texture2D(uText, tuv - vec2(0., uTextTexel.y * 3.6)).a);
+        float cap = below * (1. - txt.a) * smoothstep(.3, .65, vnoise(p * 320.));
+        vec3 icy = mix(vec3(.66, .8, .94), vec3(1.), needles * .55 + spark) * (.86 + .28 * rime);
+        // (outside the letters the crust is all ice; there's no ink there to tint it)
+        vec3 frosted = mix(mix(icy, ink, step(.01, txt.a) * .22), vec3(.97, .99, 1.), cap);
+        float frostA = max(max(txt.a, cap * .95), crust * (.42 + .42 * needles));
+        tcol = mix(melted, frosted, frostAmt);
+        ta = mix(txt.a, frostA, frostAmt);
+      }
+      col = mix(col, tcol, ta);
+    }
+    }
+    gl_FragColor = vec4(min(col, vec3(1.)), 1.);
+  }`;
+
+// ---------- Targets and materials ----------
+const rt = (type = THREE.UnsignedByteType) => new THREE.WebGLRenderTarget(1, 1, {
+  type, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, generateMipmaps: false,
+});
+const iceTarget = rt();
+const underTarget = rt();
+const aurTarget = rt(THREE.HalfFloatType);
+const meltTargets = [rt(THREE.HalfFloatType), rt(THREE.HalfFloatType)];
+let meltRead = 0;
+// A small conservative map of the real GPU melt field; never synchronously read the lake.
+const waterTarget = rt();
+const waterMap = { width: 1, height: 1, epoch: 0, pending: false, data: null, buffers: [], write: 0, captured: 0, next: 0 };
+const waterMat = passMaterial(/* glsl */ `
+  uniform vec2 uRes;
+  uniform sampler2D uMelt, uUnder;
+  void main() {
+    vec2 uv = gl_FragCoord.xy / uRes;
+    float heat = texture2D(uMelt, uv).r;
+    float shore = texture2D(uUnder, uv).a;
+    for (int i = 0; i < 4; i++) {
+      vec2 offset = vec2(i == 0 || i == 2 ? -.5 : .5, i < 2 ? -.5 : .5) / uRes;
+      heat = min(heat, texture2D(uMelt, uv + offset).r);
+      shore = max(shore, texture2D(uUnder, uv + offset).a);
+    }
+    gl_FragColor = vec4(clamp(heat / 2.5, 0., 1.), 1. - smoothstep(.47, .53, shore), 0., 1.);
+  }`, { uMelt: { value: null }, uUnder: { value: underTarget.texture } });
+
+const iceMat = passMaterial(ICE_DATA);
+const underMat = passMaterial(ICE_UNDER);
+const aurMat = passMaterial(AURORA_TOP);
+const meltU = {
+  uPrev: { value: null },
+  uSimRes: { value: new THREE.Vector2(1, 1) },
+  uView: u.uView,
+  uSeg: { value: [0, 1, 2].map(() => new THREE.Vector4()) },   // cursor, tap, wave
+  uSegR: { value: [0, 1, 2].map(() => new THREE.Vector3()) },
+  uDt: { value: 0 },
+  uRefreeze: { value: 0.16 },
+};
+const meltMat = new THREE.ShaderMaterial({ uniforms: meltU, vertexShader: VERT, fragmentShader: MELT, depthTest: false, depthWrite: false });
+const compositeMat = passMaterial(COMPOSITE, {
+  uIce: { value: iceTarget.texture },
+  uUnder: { value: underTarget.texture },
+  uAur: { value: aurTarget.texture },
+  uMelt: { value: null },
+  uRipple: { value: Array.from({ length: 6 }, () => new THREE.Vector4(0, 0, 99, 0)) },
+  uFire: { value: new THREE.Vector3(0, 0, 0) },
+  uWave: { value: new THREE.Vector4(0, 0, 0, 0) },
+  uText: { value: null },
+  uBody: { value: null },
+  uPane: { value: [new THREE.Vector4(), new THREE.Vector4()] },
+  uNameBounds: { value: new THREE.Vector4() },
+  uBodyStyle: { value: 1 },
+  uTextTexel: { value: new THREE.Vector2(1, 1) },
+  uScroll: { value: 0 },
+  uNarrow: { value: 0 },
+  uCopyShade: { value: 1 },
+});
+// Per-pass uniforms that are copies, not shared objects: keep their sizes in step.
+const passes = [iceMat, underMat, aurMat, compositeMat];
+
+const quad = new THREE.Mesh(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3)), compositeMat);
+quad.frustumCulled = false;
+const scene = new THREE.Scene();
+scene.add(quad);
+const camera = new THREE.OrthographicCamera();
+function draw(material, target, w, h) {
+  quad.material = material;
+  if (material.uniforms.uRes) material.uniforms.uRes.value.set(w, h);
+  renderer.setRenderTarget(target);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+}
+
+// ---------- Layout ----------
+// Positions in CSS pixels, then turned into the shader's units (screen height = 1, centre = 0).
+let W = 1, H = 1, narrow = false, needsBake = true;
+const toP = (x, y) => [(x - W / 2) / H, (H / 2 - y) / H];
+const underNav = document.createElement('nav');
+underNav.className = 'under';
+underNav.setAttribute('aria-label', 'Projects');
+hero.append(underNav);
+let focused = null;
+CARDS.forEach((c) => {
+  const a = document.createElement('a');
+  a.href = c.room || (c.id ? `#/work/${c.id}` : workHref(c));
+  a.innerHTML = `<span>${c.title}${c.sub ? `: ${c.sub}` : ''}</span>`;
+  a.addEventListener('focus', () => { c.heat = 1; splash = { x: c.x, y: c.y, r: c.reach * 1.25 }; focused = c; invalidate(); });
+  a.addEventListener('blur', () => { if (focused === c) focused = null; });
+  c.link = a;
+  underNav.append(a);
+});
+
+function layout() {
+  cancelPointer();
+  W = innerWidth; H = innerHeight; narrow = W < 760;
+  renderer.setSize(W, H);
+  const pr = detailScale;
+  u.uView.value.set(W, H);
+  // [x, y (fractions of the screen), size (fraction of the height), angle]
+  const spots = narrow
+    ? [[0.27, 0.57, 0.24, -0.1], [0.73, 0.55, 0.24, 0.1], [0.3, 0.82, 0.14, 0.3], [0.72, 0.82, 0.3, -0.06], [0.52, 0.69, 0.035, 0], [0.55, 0.915, 0.09, 0.05], [0.5, 0.38, 0.15, -0.08]]
+    : [[0.53, 0.36, 0.34, -0.1], [0.86, 0.3, 0.34, 0.12], [0.63, 0.7, 0.27, 0.35], [0.84, 0.73, 0.38, -0.08], [0.43, 0.8, 0.045, 0], [0.69, 0.27, 0.125, -0.12], [0.736, 0.458, 0.21, 0.1]];
+  CARDS.forEach((c, i) => {
+    const [fx, fy, spotSize, spotAngle] = spots[i];
+    const size = c.artSize ? c.artSize[narrow ? 1 : 0] : spotSize, angle = c.artSize ? 0 : spotAngle;
+    c.x = fx * W; c.y = fy * H;
+    let hw, hh;
+    if (c.shape === 0) { hh = (size * H) / 2; hw = hh * c.aspect; }
+    else if (c.shape === 1) { hw = hh = (size * H) / 2; }
+    else if (c.shape === 2) { hw = (narrow ? size * W : size * H) / 2; hh = hw / (1024 / 520); } // the summary image's own shape
+    else if (c.shape === 4) { hh = (size * H) / 2; hw = hh * c.aspect; } // a cut-out, at its own proportions
+    else { hw = hh = size * H; }
+    c.hw = hw; c.hh = hh; c.angle = angle;
+    c.reach = c.flag === 2 ? hw * 0.8 : Math.max(hw, hh);
+    const cs = Math.cos(angle), sn = Math.sin(angle);
+    const rim = c.shape === 1 || c.shape === 3 || (c.shape === 4 && c.flag !== 2)
+      ? Array.from({ length: 8 }, (_, j) => [Math.cos(j * Math.PI / 4) * hw * .95, Math.sin(j * Math.PI / 4) * hh * .95])
+      : [[-hw, -hh], [0, -hh], [hw, -hh], [hw, 0], [hw, hh], [0, hh], [-hw, hh], [-hw, 0]].map(([x, y]) => [x * .95, y * .95]);
+    c.floatPoints = [[0, 0], ...rim.map(([x, y]) => [x * cs + y * sn, -x * sn + y * cs])];
+    const [px, py] = toP(c.x, c.y);
+    u.uRect.value[i].set(px, py, hw / H, hh / H);
+    u.uMeta.value[i].set(angle, c.shape, c.heat, c.flag || 0);
+    Object.assign(c.link.style, { left: `${c.x - hw}px`, top: `${c.y - hh}px`, width: `${hw * 2}px`, height: `${hh * 2}px` });
+  });
+  // The lake fills the screen inside a ragged snowy shore.
+  u.uLake.value.set(0, 0, (W / H) / 2 - (narrow ? 0.035 : 0.065), 0.5 - (narrow ? 0.035 : 0.065));
+  // Targets: the ice at full sharpness, the aurora and the melt at half size.
+  iceTarget.setSize(W * pr, H * pr);
+  underTarget.setSize(W * pr, H * pr);
+  aurTarget.setSize(Math.ceil(W / 2), Math.ceil(H / 2));
+  const sw = Math.ceil(W / 2), sh = Math.ceil(H / 2);
+  meltTargets.forEach((t) => t.setSize(sw, sh));
+  meltU.uSimRes.value.set(sw, sh);
+  // A resize starts with fresh ice.
+  meltTargets.forEach((t) => { renderer.setRenderTarget(t); renderer.clear(); });
+  renderer.setRenderTarget(null);
+  waterMap.epoch++;
+  waterMap.width = Math.ceil(W / 12); waterMap.height = Math.ceil(H / 12);
+  waterTarget.setSize(waterMap.width, waterMap.height);
+  waterMap.buffers = [new Uint8Array(waterMap.width * waterMap.height * 4), new Uint8Array(waterMap.width * waterMap.height * 4)];
+  waterMap.data = null; waterMap.write = 0; waterMap.next = 0;
+  needsBake = true;
+}
+function bake() {
+  const pr = detailScale;
+  draw(iceMat, iceTarget, W * pr, H * pr);
+  draw(underMat, underTarget, W * pr, H * pr);
+  drawText();
+  needsBake = false;
+  refreshWaterMap(true); // Warm this tiny pass before the mouse first brushes an object.
+}
+
+function refreshWaterMap(force = false) {
+  const time = now();
+  if (waterMap.pending || (!force && (time < waterMap.next || pointer.type !== 'mouse' || !pointer.inside))) return;
+  const { epoch, width, height, write } = waterMap;
+  const buffer = waterMap.buffers[write];
+  waterMap.pending = true; waterMap.next = time + 60;
+  waterMat.uniforms.uMelt.value = meltTargets[meltRead].texture;
+  draw(waterMat, waterTarget, width, height);
+  renderer.readRenderTargetPixelsAsync(waterTarget, 0, 0, width, height, buffer).then(() => {
+    if (epoch !== waterMap.epoch) return;
+    waterMap.data = buffer; waterMap.captured = time; waterMap.write = 1 - write;
+  }).catch(() => {
+    if (epoch === waterMap.epoch) waterMap.data = null; // Uncertain water stays locked.
+  }).finally(() => { waterMap.pending = false; });
+}
+function waterMapFresh() {
+  return !!waterMap.data && (reducedMotion || now() - waterMap.captured < 180);
+}
+function canFloat(c, x = c.x, y = c.y) {
+  if (!waterMapFresh()) return false;
+  // Leave a margin for readback latency, HalfFloat rounding, and the visible thin-ice rim.
+  const cooling = reducedMotion ? 0 : (now() - waterMap.captured) * .0003;
+  return c.floatPoints.every(([dx, dy]) => {
+    const px = x + dx, py = y + dy;
+    if (px < 0 || px >= W || py < 0 || py >= H) return false;
+    const col = Math.min(waterMap.width - 1, Math.floor(px / W * waterMap.width));
+    const row = Math.min(waterMap.height - 1, Math.floor((1 - py / H) * waterMap.height));
+    const i = (row * waterMap.width + col) * 4;
+    return waterMap.data[i + 1] > 250 && waterMap.data[i] * (2.5 / 255) - cooling > .56;
+  });
+}
+function moveCard(c, x, y) {
+  const oldX = c.x, oldY = c.y, i = CARDS.indexOf(c);
+  c.x = x; c.y = y;
+  const [px, py] = toP(x, y);
+  u.uRect.value[i].x = px; u.uRect.value[i].y = py;
+  c.link.style.left = `${x - c.hw}px`; c.link.style.top = `${y - c.hh}px`;
+  // Repaint just the old/new footprint in the blurred under-ice layer. No ghost, no rebake.
+  const cs = Math.abs(Math.cos(c.angle)), sn = Math.abs(Math.sin(c.angle));
+  const ex = c.hw * cs + c.hh * sn + H * .05, ey = c.hw * sn + c.hh * cs + H * .05;
+  const pr = detailScale;
+  const left = Math.max(0, Math.floor((Math.min(oldX, x) - ex) * pr));
+  const bottom = Math.max(0, Math.floor((H - Math.max(oldY, y) - ey) * pr));
+  const right = Math.min(underTarget.width, Math.ceil((Math.max(oldX, x) + ex) * pr));
+  const top = Math.min(underTarget.height, Math.ceil((H - Math.min(oldY, y) + ey) * pr));
+  underTarget.scissor.set(left, bottom, right - left, top - bottom);
+  underTarget.scissorTest = true;
+  draw(underMat, underTarget, underTarget.width, underTarget.height);
+  underTarget.scissorTest = false;
+}
+function nudgeCard(c, dx, dy) {
+  // Sweep the whole route so an object cannot drift through ice or onto the snowy bank.
+  const distance = Math.hypot(dx, dy), steps = Math.ceil(distance / 6);
+  if (distance < .01) return;
+  let safe = 0;
+  for (let j = 1; j <= steps; j++) {
+    const fraction = j / steps;
+    if (!canFloat(c, c.x + dx * fraction, c.y + dy * fraction)) break;
+    safe = fraction;
+  }
+  if (safe) moveCard(c, c.x + dx * safe, c.y + dy * safe);
+  if (safe < 1) c.vx = c.vy = 0;
+}
+function stopFloating() {
+  for (const c of CARDS) c.vx = c.vy = 0;
+}
+function updateFloating(dt) {
+  const fromX = pointer.nudgeX, fromY = pointer.nudgeY;
+  const dx = pointer.x - fromX, dy = pointer.y - fromY;
+  // Consume every stroke, even while frozen: melting never releases an old mouse impulse.
+  pointer.nudgeX = pointer.x; pointer.nudgeY = pointer.y;
+  if (!pointer.inside || pointer.type !== 'mouse' || pointer.down || pointer.overLink || !waterMapFresh()) {
+    stopFloating(); return;
+  }
+  const distance = Math.hypot(dx, dy);
+  let touched = null;
+  if (distance > .1) {
+    const steps = Math.min(64, Math.max(1, Math.ceil(distance / 12)));
+    for (let i = 1; i <= steps && !touched; i++) {
+      touched = cardAt(fromX + dx * i / steps, fromY + dy * i / steps, 10);
+    }
+  }
+  const decay = Math.exp(-5.5 * Math.min(dt, .05));
+  for (const c of CARDS) {
+    if (!canFloat(c) || c === focused) { c.vx = c.vy = 0; continue; }
+    if (reducedMotion) {
+      c.vx = c.vy = 0;
+      // A small, direct response to contact, with no coast after the mouse stops.
+      if (c === touched) {
+        const amount = Math.min(.14, 4 / distance);
+        nudgeCard(c, dx * amount, dy * amount);
+      }
+      continue;
+    }
+    // Brushing gives a gentle push in the mouse's direction; a parked cursor adds no force.
+    if (c === touched) { c.vx += dx * 1.8; c.vy += dy * 1.8; }
+    const speed = Math.hypot(c.vx, c.vy);
+    if (speed < .5) { c.vx = c.vy = 0; continue; }
+    if (speed > 90) { c.vx *= 90 / speed; c.vy *= 90 / speed; }
+    nudgeCard(c, c.vx * (1 - decay) / 5.5, c.vy * (1 - decay) / 5.5);
+    c.vx *= decay; c.vy *= decay;
+  }
+}
+
+// ---------- The headline text and its frost ----------
+// Each word of the eyebrow, name and intro is wrapped in a span so the page's own layout says
+// exactly where it sits. Drawings use page coordinates, so the scene follows the page as it
+// scrolls.
+// - The name is drawn into the scene (uText) and frosted over; the real name stays in the
+//   page, made invisible.
+// - The body text (eyebrow, intro) stays real, crisp page text. Its shape (uBody) and blocks
+//   (uPane) only tell the scene where to put frost behind it, in the style picked in the lab
+//   bar (uBodyStyle: clear, rime around the letters, or frosted-glass panes).
+const textTexture = (canvas) => {
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = tex.magFilter = THREE.LinearFilter;
+  tex.generateMipmaps = false;
+  tex.premultiplyAlpha = true;
+  return tex;
+};
+const makeTextTexture = () => {
+  const canvas = document.createElement('canvas');
+  return { canvas, ctx: canvas.getContext('2d'), tex: textTexture(canvas) };
+};
+const nameLayer = makeTextTexture();
+const bodyLayer = makeTextTexture();
+compositeMat.uniforms.uText.value = nameLayer.tex;
+compositeMat.uniforms.uBody.value = bodyLayer.tex;
+const textBlocks = ['.eyebrow', '.name', '.intro'].map((sel) => copy.querySelector(sel)).filter(Boolean).map((el) => {
+  const cs = getComputedStyle(el);
+  const block = { el, name: el.matches('.name'), color: cs.color, upper: cs.textTransform === 'uppercase', words: [] };
+  [...el.childNodes].forEach((node) => {
+    if (node.nodeType !== Node.TEXT_NODE) return;
+    const frag = document.createDocumentFragment();
+    node.textContent.split(/(\s+)/).forEach((part) => {
+      if (!part) return;
+      if (/^\s+$/.test(part)) { frag.append(part); return; }
+      const span = document.createElement('span');
+      span.textContent = part;
+      block.words.push(span);
+      frag.append(span);
+    });
+    node.replaceWith(frag);
+  });
+  return block;
+});
+function drawText() {
+  const pr = detailScale;
+  [nameLayer, bodyLayer].forEach((layer) => {
+    const { canvas, ctx } = layer;
+    const width = Math.round(W * pr), height = Math.round(H * pr);
+    if (canvas.width !== width || canvas.height !== height) {
+      // GPU texture dimensions are immutable after first use in three.js r186.
+      layer.tex.dispose();
+      canvas.width = width; canvas.height = height;
+      layer.tex = textTexture(canvas);
+    }
+    ctx.setTransform(pr, 0, 0, pr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.textBaseline = 'alphabetic';
+  });
+  compositeMat.uniforms.uText.value = nameLayer.tex;
+  compositeMat.uniforms.uBody.value = bodyLayer.tex;
+  const panes = compositeMat.uniforms.uPane.value;
+  panes.forEach((v) => v.set(0, 0, 0, 0));
+  let pane = 0;
+  textBlocks.forEach((b) => {
+    const ctx = (b.name ? nameLayer : bodyLayer).ctx;
+    const cs = getComputedStyle(b.el);
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    ctx.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
+    ctx.fillStyle = b.name ? b.color : '#fff';
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    b.words.forEach((span) => {
+      const r = span.getBoundingClientRect();
+      if (!r.width) return; // hidden (the intro on phones)
+      const word = b.upper ? span.textContent.toUpperCase() : span.textContent;
+      const m = ctx.measureText(word);
+      ctx.fillText(word, r.left, r.top + scrollY + m.fontBoundingBoxAscent);
+      x0 = Math.min(x0, r.left); x1 = Math.max(x1, r.right);
+      y0 = Math.min(y0, r.top + scrollY); y1 = Math.max(y1, r.bottom + scrollY);
+    });
+    if (b.name) {
+      b.el.classList.add('frost-text');
+      compositeMat.uniforms.uNameBounds.value.set(x0 / W, 1 - y1 / H, x1 / W, 1 - y0 / H);
+    }
+    // A body block's box, in the texture's coordinates (v runs up from the bottom).
+    else if (x1 > x0 && pane < panes.length) panes[pane++].set(x0 / W, 1 - y1 / H, x1 / W, 1 - y0 / H);
+  });
+  nameLayer.tex.needsUpdate = bodyLayer.tex.needsUpdate = true;
+  compositeMat.uniforms.uTextTexel.value.set(1 / nameLayer.canvas.width, 1 / nameLayer.canvas.height);
+}
+// The lab bar's switch for the body text's frost; the choice is kept in the address (?body=).
+const BODY_STYLES = [['clear', 'Clear'], ['rime', 'Rime'], ['glass', 'Frosted glass']];
+{
+  const params = new URLSearchParams(location.search);
+  let style = BODY_STYLES.some(([k]) => k === params.get('body')) ? params.get('body') : 'clear';
+  const group = document.createElement('span');
+  group.className = 'opts';
+  group.setAttribute('role', 'group');
+  group.setAttribute('aria-label', 'Body text frost');
+  group.append('Body text:');
+  const buttons = BODY_STYLES.map(([key, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.addEventListener('click', () => set(key));
+    group.append(b);
+    return [key, b];
+  });
+  function set(key, first = false) {
+    style = key;
+    compositeMat.uniforms.uBodyStyle.value = BODY_STYLES.findIndex(([k]) => k === key);
+    buttons.forEach(([k, b]) => b.setAttribute('aria-pressed', String(k === key)));
+    const p = new URLSearchParams(location.search); // (fresh: the Objects switch writes here too)
+    p.set('body', key);
+    if (lab) history.replaceState(history.state, '', `${location.pathname}?${p}${location.hash}`);
+    if (!first) invalidate(); // (the frame loop isn't set up yet on the first call)
+  }
+  document.querySelector('.labbar').append(group);
+  set(style, true);
+}
+const OBJECT_SETS = [['art', 'Doorway + Koko'], ['phones', 'Phones']];
+function useObjects(key) {
+  const [lim, cp] = CARDS;
+  if (key === 'phones') {
+    for (const c of [lim, cp]) Object.assign(c, c.screen, { artSize: null, flag: 0 });
+  } else {
+    Object.assign(lim, { tex: artTex.doorway, shape: 4, aspect: ART.doorway.aspect, artSize: [0.34, 0.23], flag: 0 });
+    Object.assign(cp, { tex: artTex.koko, shape: 4, aspect: 1, artSize: [0.3, 0.2], flag: 1 });
+  }
+  u.uCard0.value = lim.tex; u.uCard1.value = cp.tex;
+}
+{
+  const params = new URLSearchParams(location.search);
+  let objects = OBJECT_SETS.some(([k]) => k === params.get('objects')) ? params.get('objects') : 'art';
+  const group = document.createElement('span');
+  group.className = 'opts';
+  group.setAttribute('role', 'group');
+  group.setAttribute('aria-label', 'Objects under the ice');
+  group.append('Objects:');
+  const buttons = OBJECT_SETS.map(([key, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.addEventListener('click', () => set(key));
+    group.append(b);
+    return [key, b];
+  });
+  function set(key, first = false) {
+    objects = key;
+    useObjects(key);
+    buttons.forEach(([k, b]) => b.setAttribute('aria-pressed', String(k === key)));
+    const p = new URLSearchParams(location.search);
+    p.set('objects', key);
+    if (lab) history.replaceState(history.state, '', `${location.pathname}?${p}${location.hash}`);
+    if (!first) { layout(); invalidate(); }
+  }
+  document.querySelector('.labbar').append(group);
+  set(objects, true);
+}
+// The fonts may arrive after the first draw and change the layout.
+document.fonts?.ready.then(() => { needsBake = true; invalidate(); });
+
+// ---------- Input ----------
+const ctrl = auroraController(u);
+const canvas = renderer.domElement;
+canvas.style.touchAction = 'pan-y';
+// The cursor's warmth reaches this far; the hole it opens is (1 − 0.5 / 1.4) of it, ~64% (see MELT).
+const brushR = () => (narrow ? 70 : 100);
+const pointer = { x: -1, y: -1, targetX: -1, targetY: -1, fx: -1, fy: -1, nudgeX: -1, nudgeY: -1, inside: false, overLink: false, type: 'mouse', down: false, id: null, downX: 0, downY: 0, downAt: 0 };
+let touchFade = 0;
+let lastRipple = { x: -999, y: -999 }, rippleIndex = 0;
+let pinned = null, splash = null, wave = null, lastTap = { t: 0, x: 0, y: 0 };
+let roomOpen = false; // the view is up on a shore, in one of the rooms (b-rooms.js)
+function cancelPointer() {
+  stopFloating(); pointer.down = false; pointer.id = null; lastTap.t = 0;
+}
+const WAVE_TIME = 1.6; // seconds for a double-click melt to spread to its full size
+function ripple(x, y, strength) {
+  const [px, py] = toP(x, y);
+  compositeMat.uniforms.uRipple.value[rippleIndex].set(px, py, 0, strength);
+  rippleIndex = (rippleIndex + 1) % 6;
+}
+// Later cards are painted on top; keep mouse contact and clicks in the same order.
+const cardAt = (x, y, padding = 0) => CARDS.findLast((c) => {
+  const dx = x - c.x, dy = y - c.y, cs = Math.cos(c.angle), sn = Math.sin(c.angle);
+  const lx = dx * cs - dy * sn, ly = dx * sn + dy * cs; // screen y points down, so the turn flips
+  if (c.shape === 3) return Math.hypot(dx, dy) < c.hw * 1.3 + padding; // the ball, with a little slack
+  if (c.shape === 1) return Math.hypot(dx, dy) < c.hw + padding; // the round display
+  if (c.shape === 4 && c.flag !== 2) return (lx / (c.hw + padding)) ** 2 + (ly / (c.hh + padding)) ** 2 < 1; // the artwork
+  return Math.abs(lx) < c.hw + padding && Math.abs(ly) < c.hh + padding;
+});
+// The flame follows the pointer anywhere in the hero, over the lake and over the copy alike
+// (melting the text's frost as it goes); it goes out over the lab bar and below the hero.
+const inHero = (target) => target === canvas || !!target?.closest?.('.aurora-hero');
+const leaveHero = () => { cancelPointer(); if (pointer.inside) { pointer.inside = false; ctrl.point(null); invalidate(); } };
+addEventListener('pointermove', (e) => {
+  if (pointer.down && e.pointerId !== pointer.id) return;
+  if (!inHero(e.target)) { leaveHero(); return; }
+  const x = e.clientX, y = e.clientY;
+  const entered = !pointer.inside || pointer.type !== e.pointerType;
+  if (entered) { pointer.fx = pointer.nudgeX = x; pointer.fy = pointer.nudgeY = y; }
+  if (entered || e.pointerType !== 'mouse' || reducedMotion) { pointer.x = x; pointer.y = y; }
+  pointer.type = e.pointerType;
+  if (e.target === canvas && Math.hypot(x - lastRipple.x, y - lastRipple.y) > 70) { ripple(x, y, 0.5); lastRipple = { x, y }; }
+  pointer.targetX = x; pointer.targetY = y; pointer.inside = true;
+  pointer.overLink = !!e.target.closest?.('a, button');
+  const [px, py] = toP(x, y);
+  ctrl.point(new THREE.Vector2(px, py));
+  invalidate();
+});
+// Lifting a finger emits pointerleave immediately; keep its brief tap feedback alive.
+document.documentElement.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') leaveHero(); });
+addEventListener('blur', leaveHero);
+canvas.addEventListener('pointerdown', (e) => {
+  if (pointer.down || e.button !== 0 || !e.isPrimary) return;
+  stopFloating(); // Keep a project still from press to release, so a normal click is reliable.
+  Object.assign(pointer, { type: e.pointerType, down: true, id: e.pointerId, downX: e.clientX, downY: e.clientY, downAt: now() });
+  if (e.pointerType !== 'mouse') {
+    clearTimeout(touchFade);
+    Object.assign(pointer, { x: e.clientX, y: e.clientY, targetX: e.clientX, targetY: e.clientY, fx: e.clientX, fy: e.clientY, inside: true, overLink: false });
+    fire.x = fire.px = e.clientX; fire.y = fire.py = e.clientY;
+    const [x, y] = toP(e.clientX, e.clientY);
+    ctrl.point(new THREE.Vector2(x, y));
+    invalidate();
+  }
+});
+canvas.addEventListener('pointercancel', (e) => {
+  if (pointer.down && e.pointerId !== pointer.id) return;
+  pointer.down = false; leaveHero();
+});
+canvas.addEventListener('pointerup', (e) => {
+  if (!pointer.down || e.pointerId !== pointer.id) return;
+  pointer.down = false; pointer.id = null;
+  if (pointer.type !== 'mouse') touchFade = setTimeout(leaveHero, reducedMotion ? 200 : 1900);
+  if (Math.hypot(e.clientX - pointer.downX, e.clientY - pointer.downY) > 8 || now() - pointer.downAt > 500) return;
+  const over = cardAt(e.clientX, e.clientY);
+  // A melted project opens its room on the east shore (the ball and the crawler, the playground
+  // room on the south shore); on touch, the first tap melts it and the second opens it.
+  if (over && over.heat > 0.5 && (pointer.type === 'mouse' || pinned === over)) {
+    if (over.room) location.hash = over.room; else if (over.id) location.hash = `#/work/${over.id}`; else location.href = workHref(over);
+    return;
+  }
+  // A double click (or double tap) sends a melt wave across most of the lake. A single click
+  // only rings the water; a single tap on a project melts it so you can see it.
+  const double = now() - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40;
+  lastTap = { t: double ? 0 : now(), x: e.clientX, y: e.clientY };
+  ripple(e.clientX, e.clientY, double ? 1 : 0.5);
+  if (double) {
+    // Reach 108% of the way to the lake's farthest corner; with the melt's soft edge that
+    // opens about 85% of the way, leaving ice in the far corners.
+    const m = (narrow ? 0.035 : 0.065) * H;
+    const far = Math.max(...[[m, m], [W - m, m], [m, H - m], [W - m, H - m]].map(([x, y]) => Math.hypot(x - e.clientX, y - e.clientY)));
+    wave = { x: e.clientX, y: e.clientY, age: reducedMotion ? WAVE_TIME : 0, r: far * 1.08 };
+    // The flame flares up to drive it.
+    fire.boost = 1;
+    fire.burst = true;
+    if (reducedMotion) setTimeout(() => { fire.boost = 0; invalidate(); }, 180);
+    pinned = null;
+  } else if (over && pointer.type !== 'mouse') {
+    splash = { x: over.x, y: over.y, r: over.reach * 1.25 };
+    over.heat = 1;
+    pinned = over;
+  } else pinned = null;
+  invalidate();
+});
+
+// ---------- Overlay: names on the ice, and a little snow drifting over ----------
+// A press released over the copy or outside the canvas must not leave hover motion paused.
+addEventListener('pointerup', (e) => {
+  if (pointer.down && e.pointerId === pointer.id) { pointer.down = false; pointer.id = null; }
+});
+
+const overlay = document.createElement('canvas');
+overlay.className = 'overlay';
+stageEl.append(overlay);
+const octx = overlay.getContext('2d');
+const flameCanvas = document.createElement('canvas');
+flameCanvas.className = 'flame-overlay';
+document.body.append(flameCanvas);
+const fireCtx = flameCanvas.getContext('2d');
+let firePrimed = false;
+const flakes = Array.from({ length: 110 }, () => ({ x: Math.random(), y: Math.random(), s: 0.6 + Math.random() * 1.8, v: 0.4 + Math.random() }));
+function drawOverlay(dt, t) {
+  const dpr = Math.min(devicePixelRatio, 2);
+  if (overlay.width !== Math.round(W * dpr) || overlay.height !== Math.round(H * dpr)) {
+    overlay.width = Math.round(W * dpr); overlay.height = Math.round(H * dpr);
+    overlay.style.width = W + 'px'; overlay.style.height = H + 'px';
+    // The soft foreground light does not need the text layer's full backing resolution.
+    const fpr = Math.min(devicePixelRatio, 1.5);
+    flameCanvas.width = Math.round(W * fpr); flameCanvas.height = Math.round(H * fpr);
+    flameCanvas.style.width = W + 'px'; flameCanvas.style.height = H + 'px';
+    fireCtx.setTransform(fpr, 0, 0, fpr, 0, 0);
+    // Warm the foreground canvas's additive/sprite paths before the first interaction.
+    if (!firePrimed) {
+      const savedFire = { ...fire };
+      Object.assign(fire, { x: W / 2, y: H / 2, level: 1, boost: 1, flicker: 1, embers: [{ x: W / 2, y: H / 2, age: .1, life: 1, size: 2 }] });
+      drawFire(0, 12);
+      fireCtx.getImageData(0, 0, 1, 1);
+      Object.assign(fire, savedFire);
+      firePrimed = true;
+    }
+  }
+  octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  octx.clearRect(0, 0, W, H);
+  const night = 1 - Math.min(1, u.uDawn.value / 0.6);
+  if (night > 0) {
+    octx.fillStyle = '#E8F2FF';
+    flakes.forEach((f) => {
+      if (!reducedMotion) { f.x += dt * 0.006 * f.v; f.y += dt * 0.012 * f.v; }
+      if (f.x > 1) f.x -= 1;
+      if (f.y > 1) f.y -= 1;
+      octx.globalAlpha = 0.35 * night * (0.6 + 0.4 * Math.sin(t * 2 + f.s * 10));
+      octx.beginPath(); octx.arc(f.x * W + Math.sin(t * 0.7 + f.s * 5) * 6, f.y * H, f.s, 0, Math.PI * 2); octx.fill();
+    });
+    // Each project's name sits on the ice above it, brighter once it's melted through.
+    octx.font = `700 ${narrow ? 10.5 : 11.5}px Manrope, sans-serif`;
+    octx.textAlign = 'center';
+    octx.letterSpacing = '0.08em';
+    CARDS.forEach((c) => {
+      octx.globalAlpha = (0.45 + 0.55 * c.heat) * night;
+      octx.fillStyle = '#E6EEF8';
+      octx.fillText(c.title.toUpperCase(), c.x, c.shape === 4 ? c.y - c.hh * (c.flag === 2 ? 0.75 : 0.92) - 12 : c.y - c.reach - (c.shape === 3 ? 16 : 14));
+    });
+    octx.globalAlpha = 1;
+  }
+  drawFire(dt, t);
+}
+
+// ---------- The cursor: a small flame ----------
+// Over the lake the arrow becomes a flame: a white-hot core, a flickering glow, tongues
+// licking upward and embers drifting off it (more when it moves fast). It follows the
+// pointer with a little easing. A thin ring shows when a melted project under it can be clicked. A double-click
+// makes it flare up: bigger, brighter, flickering harder, with a burst of sparks, settling
+// back over FLARE_TIME.
+const FLARE_TIME = 1.8;
+const fire = { x: -100, y: -100, px: -100, py: -100, level: 0, flicker: 1, clickable: false, embers: [], spawn: 0, boost: 0, burst: false };
+// Rasterize the soft light once; reuse it without allocating gradients on cursor entry.
+const glowSprites = Object.fromEntries(Object.entries({
+  halo: [[0, 'rgba(255,150,60,.38)'], [.45, 'rgba(255,120,45,.12)'], [1, 'rgba(255,110,40,0)']],
+  tongue: [[0, 'rgba(255,205,120,.55)'], [.5, 'rgba(255,140,50,.25)'], [1, 'rgba(255,80,30,0)']],
+  hot: [[0, 'rgba(255,225,160,.9)'], [1, 'rgba(255,150,60,0)']],
+  core: [[0, 'rgba(255,253,245,1)'], [.55, 'rgba(255,236,190,.85)'], [1, 'rgba(255,200,120,0)']],
+}).map(([name, stops]) => {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'), gradient = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  stops.forEach(([at, color]) => gradient.addColorStop(at, color));
+  g.fillStyle = gradient; g.fillRect(0, 0, 128, 128);
+  return [name, c];
+}));
+function glowDot(x, y, r, kind, alpha) {
+  const octx = fireCtx;
+  octx.globalAlpha = alpha;
+  octx.drawImage(glowSprites[kind], x - r, y - r, r * 2, r * 2);
+  octx.globalAlpha = 1;
+}
+function updateFire(dt, t) {
+  const on = pointer.inside ? 1 : 0;
+  fire.level = reducedMotion ? on : damp(fire.level, on, on ? 18 : 8, dt);
+  if (pointer.inside) { fire.x = pointer.x; fire.y = pointer.y; }
+  fire.boost = Math.max(0, fire.boost - dt / FLARE_TIME);
+  const b = fire.boost;
+  fire.flicker = reducedMotion ? 1 : 0.9 + (0.07 + 0.08 * b) * Math.sin(t * (13.1 + 9 * b)) + 0.05 * Math.sin(t * 23.7 + 1.3) + 0.04 * Math.sin(t * 7.3 + 2.1);
+  // The flare's burst: sparks thrown out in every direction.
+  if (fire.burst) {
+    fire.burst = false;
+    if (!reducedMotion) {
+      for (let i = 0; i < 90; i++) {
+        const a = Math.random() * Math.PI * 2, s = 140 + Math.random() * 300;
+        fire.embers.push({
+          x: fire.x, y: fire.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 60,
+          age: 0, life: 0.6 + Math.random() * 0.7, size: 1.5 + Math.random() * 2.2, seed: Math.random() * 10,
+        });
+      }
+    }
+  }
+  // Embers: a few a second at rest, many more when the flame moves or flares.
+  const step = Math.min(dt, 1 / 30);
+  const speed = Math.hypot(fire.x - fire.px, fire.y - fire.py) / Math.max(dt, 1e-3);
+  const vx = (fire.x - fire.px) / Math.max(dt, 1e-3), vy = (fire.y - fire.py) / Math.max(dt, 1e-3);
+  fire.px = fire.x; fire.py = fire.y;
+  if (!reducedMotion && pointer.inside) {
+    fire.spawn += step * Math.min(90, 12 + speed * 0.08) * (1 + 3 * b);
+    while (fire.spawn >= 1) {
+      fire.spawn -= 1;
+      fire.embers.push({
+        x: fire.x + (Math.random() - 0.5) * 16, y: fire.y + (Math.random() - 0.5) * 12,
+        vx: (Math.random() - 0.5) * 50 - vx * 0.12, vy: -(40 + Math.random() * 70) - vy * 0.08,
+        age: 0, life: 0.6 + Math.random() * 0.8, size: 1.2 + Math.random() * 1.8, seed: Math.random() * 10,
+      });
+    }
+  }
+  let live = 0;
+  for (const e of fire.embers) {
+    e.age += dt;
+    e.x += (e.vx + Math.sin(e.age * 9 + e.seed) * 18) * step;
+    e.y += e.vy * step;
+    e.vx *= Math.exp(-1.83 * dt); e.vy *= Math.exp(-.907 * dt);
+    if (e.age < e.life) fire.embers[live++] = e;
+  }
+  fire.embers.length = live;
+  // Ring: over a melted project, or over a link or button in the copy.
+  const over = pointer.inside ? cardAt(pointer.x, pointer.y) : null;
+  fire.clickable = pointer.inside && (pointer.overLink || !!(over && over.heat > 0.5));
+  fire.floating = pointer.type === 'mouse' && !!over && canFloat(over);
+}
+function drawFire(dt, t) {
+  const octx = fireCtx;
+  octx.clearRect(0, 0, W, H);
+  octx.globalCompositeOperation = 'lighter';
+  // Embers, yellow cooling to orange and red as they rise.
+  fire.embers.forEach((e) => {
+    const k = e.age / e.life;
+    const r = Math.round(255 - 35 * k), g = Math.round(225 - 165 * k), b = Math.round(140 - 110 * k);
+    octx.globalAlpha = (1 - k) * 0.9;
+    octx.fillStyle = `rgb(${r},${g},${b})`;
+    octx.beginPath(); octx.arc(e.x, e.y, e.size * (1 - k * 0.4), 0, Math.PI * 2); octx.fill();
+  });
+  octx.globalAlpha = 1;
+  const L = fire.level;
+  if (L > 0.01) {
+    // While flaring the flame is up to ~1.9× its size, brighter, with a wide outer bloom.
+    const b = 1 - Math.pow(1 - fire.boost, 2);
+    const f = fire.flicker * (1 + 0.9 * b), x = fire.x, y = fire.y;
+    const A = Math.min(1, L * (1 + 0.5 * b));
+    if (b > 0.01) glowDot(x, y, 210 * f, 'halo', .65 * b * L);
+    // Wide warm halo.
+    glowDot(x, y, 100 * f, 'halo', .85 * A);
+    // Tongues of flame licking upward, each a soft stretched glow that sways (more of them, and
+    // wilder, while flaring).
+    const tongues = 4 + Math.round(3 * b);
+    for (let k = 0; k < tongues; k++) {
+      const spread = (k - (tongues - 1) / 2) * (0.32 + 0.1 * b);
+      const a = -Math.PI / 2 + spread + (reducedMotion ? 0 : Math.sin(t * (3.1 + 4 * b) + k * 1.7) * (0.35 + 0.25 * b));
+      const len = (26 + (reducedMotion ? 6 : 12 * Math.sin(t * (7.3 + 6 * b) + k * 2.3) + 6)) * f;
+      octx.save();
+      octx.translate(x + Math.cos(a) * len * 0.55, y + Math.sin(a) * len * 0.55);
+      octx.rotate(a);
+      octx.scale(1, 0.42);
+      glowDot(0, 0, len, 'tongue', A);
+      octx.restore();
+    }
+    // Hot glow and white-hot core.
+    // A narrow, gently leaning wick of light gives the soft tongues a readable flame shape.
+    const sway = reducedMotion ? 1 : Math.sin(t * 6.7) * 3 + Math.sin(t * 11.3) * 1.5;
+    octx.save(); octx.translate(x, y); octx.scale(f, f);
+    octx.globalAlpha = .65 * A; octx.fillStyle = '#FFB25A';
+    octx.beginPath(); octx.moveTo(0, 4);
+    octx.bezierCurveTo(-10, -1, -7, -14, sway, -32);
+    octx.bezierCurveTo(sway - 2, -16, 12, -7, 0, 4); octx.fill();
+    octx.restore();
+    glowDot(x, y, 28 * f, 'hot', .75 * A);
+    glowDot(x, y, 9 * (1 + 0.5 * b), 'core', A);
+  }
+  octx.globalCompositeOperation = 'source-over';
+  if (fire.clickable && L > 0.5) {
+    octx.globalAlpha = 0.9 * L;
+    octx.strokeStyle = fire.floating ? '#FFD2A0' : '#FFF4E6';
+    octx.lineWidth = 2;
+    octx.beginPath(); octx.arc(fire.x, fire.y, 26, 0, Math.PI * 2); octx.stroke();
+    octx.globalAlpha = 1;
+  }
+}
+
+// ---------- Frame ----------
+let running = false, raf = 0, lastFrameTime = 0, sceneTime = 20;
+let qualityTime = 0, frames = 0, slow = 0;
+let pendingScale = null;
+let shownCard = null, shownX = 0, shownY = 0;
+// Quality is an output-only change. Never clear heat or redraw the text/ice here.
+// (Never below one pixel per CSS pixel, where the whole lake would turn visibly pixelated.)
+const qualityFloor = Math.min(1, devicePixelRatio);
+function setQuality(next) {
+  pendingScale = Math.max(qualityFloor, Math.min(detailScale, next));
+}
+function frame(timestamp = now()) {
+  // Changing a canvas size clears it, so resize before drawing, never after presentation.
+  if (pendingScale !== null) {
+    scale = pendingScale; pendingScale = null;
+    renderer.setPixelRatio(scale);
+  }
+  const elapsed = lastFrameTime ? Math.max(0, (timestamp - lastFrameTime) / 1000) : 1 / 60;
+  lastFrameTime = timestamp;
+  // Cooling and wave progress follow elapsed time; only particle integration is capped.
+  const dt = reducedMotion ? 1 / 60 : elapsed;
+  // A gentle mouse follow; the flame and its melt brush share the same eased position.
+  // Touch and reduced motion remain immediate, and native clicks keep their coordinates.
+  if (pointer.inside && pointer.type === 'mouse' && !reducedMotion) {
+    pointer.x = damp(pointer.x, pointer.targetX, 16, dt);
+    pointer.y = damp(pointer.y, pointer.targetY, 16, dt);
+  }
+  sceneTime += dt;
+  const t = reducedMotion ? 12 : sceneTime;
+  ctrl.update(dt, t);
+  if (needsBake) bake();
+
+  // 1. Melt: this frame's strokes (the cursor's path, a tap, a double-click wave) melt at once.
+  const seg = meltU.uSeg.value, segR = meltU.uSegR.value;
+  segR.forEach((s) => s.set(0, 0, 0));
+  if (pointer.inside) {
+    seg[0].set(pointer.fx, pointer.fy, pointer.x, pointer.y);
+    segR[0].set(brushR(), 1.4, 1);
+    pointer.fx = pointer.x; pointer.fy = pointer.y;
+  }
+  if (splash) { seg[1].set(splash.x, splash.y, splash.x, splash.y); segR[1].set(splash.r, 1.6, 1); splash = null; }
+  else if (focused || pinned) {
+    const c = focused || pinned;
+    seg[1].set(c.x, c.y, c.x, c.y); segR[1].set(c.reach * 1.25, 1.6, 1);
+  }
+  compositeMat.uniforms.uWave.value.w = 0;
+  if (wave) {
+    // The melt spreads out fast, then slows as it reaches the far ice; strong enough that the
+    // open water lasts about ten seconds before freezing back in from the edges.
+    wave.age = Math.min(WAVE_TIME, wave.age + dt);
+    const k = 1 - Math.pow(1 - wave.age / WAVE_TIME, 3);
+    const r = Math.max(1, wave.r * k);
+    seg[2].set(wave.x, wave.y, wave.x, wave.y);
+    segR[2].set(r, 2.2, 1);
+    // A ring of heat glows along the advancing edge (where the warmth crosses 0.5, at
+    // (1 − 0.5 / 2.2) of the radius), fading as the wave slows.
+    const [wx, wy] = toP(wave.x, wave.y);
+    compositeMat.uniforms.uWave.value.set(wx, wy, (r * (1 - 0.5 / 2.2)) / H, Math.pow(1 - wave.age / WAVE_TIME, 0.6));
+    // Everything the wave passes melts through, and stays open (and clickable) for as long as
+    // the water over it does: the warmth there starts at 2.2 × (1 − distance / radius) and
+    // cools at meltU.uRefreeze per second down to the 0.5 threshold.
+    CARDS.forEach((c) => {
+      const d = Math.hypot(c.x - wave.x, c.y - wave.y);
+      if (d >= r * 0.8) return;
+      const v0 = 2.2 * Math.max(0, 1 - d / wave.r);
+      c.heat = 1;
+      c.openUntil = Math.max(c.openUntil || 0, now() + (Math.max(0, v0 - 0.5) / meltU.uRefreeze.value) * 850);
+    });
+    if (wave.age >= WAVE_TIME) wave = null;
+  }
+  meltU.uDt.value = reducedMotion ? 0.02 : dt;
+  meltU.uPrev.value = meltTargets[meltRead].texture;
+  draw(meltMat, meltTargets[1 - meltRead], meltU.uSimRes.value.x, meltU.uSimRes.value.y);
+  meltRead = 1 - meltRead;
+  compositeMat.uniforms.uMelt.value = meltTargets[meltRead].texture;
+  updateFloating(dt);
+
+  // The cursor's warmth over a project melts it through; away from it, it slowly frosts over.
+  CARDS.forEach((c, i) => {
+    const near = pointer.inside && Math.hypot(pointer.x - c.x, pointer.y - c.y) < c.reach + brushR() * 0.4;
+    const hold = c === pinned || c === focused || now() < (c.openUntil || 0);
+    c.heat = Math.min(1, Math.max(0, c.heat + (near || hold ? dt * 2.6 : -dt * 0.22)));
+    c.hot = c.heat > 0.5;
+    u.uMeta.value[i].z = c.heat;
+  });
+  compositeMat.uniforms.uRipple.value.forEach((r) => { r.z += dt; });
+  updateFire(dt, t);
+  const [fx, fy] = toP(fire.x, fire.y);
+  compositeMat.uniforms.uFire.value.set(fx, fy, fire.level * fire.flicker * (1 + 1.5 * fire.boost));
+  compositeMat.uniforms.uScroll.value = scrollY / H;
+  compositeMat.uniforms.uNarrow.value = narrow ? 1 : 0;
+  const cs = compositeMat.uniforms.uCopyShade;
+  cs.value += ((roomOpen ? 0 : 1) - cs.value) * (1 - Math.exp(-dt * 4));
+
+  // 2. The aurora overhead, at half size.
+  draw(aurMat, aurTarget, aurTarget.width, aurTarget.height);
+  // 3. The lake.
+  const pr = renderer.getPixelRatio();
+  draw(compositeMat, null, W * pr, H * pr);
+
+  // Label the warmest melted project (on phones, below it, clear of the copy and buttons).
+  const hovered = pointer.inside ? cardAt(pointer.x, pointer.y) : null;
+  let show = hovered?.hot ? hovered : null;
+  if (!show) for (const c of CARDS) if (c.hot && (!show || c.heat > show.heat)) show = c;
+  if (show && u.uDawn.value < 0.4) {
+    const y = narrow ? show.y + show.reach + 64 : show.y - show.reach - 28;
+    if (show !== shownCard || show.x !== shownX || y !== shownY) tag.show(show, show.x, y);
+    shownCard = show; shownX = show.x; shownY = y;
+  } else if (shownCard) { tag.hide(); shownCard = null; }
+  drawOverlay(dt, t);
+  refreshWaterMap();
+
+  if (running && !reducedMotion) {
+    frames++; slow += elapsed > .020 ? 1 : 0; qualityTime += elapsed;
+    if (qualityTime >= 2 && frames >= 45) {
+      // Small, infrequent steps only for sustained missed 60 Hz frames, not one long task.
+      if (slow / frames > .3 && scale > qualityFloor) setQuality(scale - .125);
+      qualityTime = 0; frames = 0; slow = 0;
+    }
+  }
+}
+function start() {
+  if (running) return;
+  cancelAnimationFrame(raf); raf = 0; lastFrameTime = 0;
+  qualityTime = 0; frames = 0; slow = 0;
+  running = true;
+  renderer.setAnimationLoop((time) => frame(time));
+}
+function stop() { cancelPointer(); running = false; renderer.setAnimationLoop(null); lastFrameTime = 0; }
+function invalidate() {
+  if (running || raf || document.hidden) return;
+  raf = requestAnimationFrame((time) => { raf = 0; if (!running) frame(time); });
+}
+
+addEventListener('resize', () => { layout(); invalidate(); });
+layout();
+const heroVisible = () => scrollY < innerHeight * 1.05;
+// No morning here: the page doesn't scroll, so the lake keeps its night colours (uDawn stays 0),
+// and the shade behind the copy stays on.
+document.documentElement.style.setProperty('--night', '1');
+addEventListener('scroll', () => {
+  if (reducedMotion) return;
+  if (heroVisible() && !document.hidden) start(); else stop();
+}, { passive: true });
+document.addEventListener('visibilitychange', () => (document.hidden ? stop() : !reducedMotion && heroVisible() && !roomOpen && start()));
+// The rooms pan the view off the lake onto its shores (About north, the projects east, the
+// playground south). The shade
+// behind the copy fades as it goes, and the lake rests while a room is open (only an edge of it
+// shows, as the dock).
+mountLakeRooms(hero, {
+  leaving(instant) { roomOpen = true; leaveHero(); if (instant) compositeMat.uniforms.uCopyShade.value = 0; invalidate(); },
+  arrived() { stop(); invalidate(); },
+  returning(instant) {
+    roomOpen = false;
+    if (instant) compositeMat.uniforms.uCopyShade.value = 1;
+    if (!reducedMotion && heroVisible()) start(); else invalidate();
+  },
+});
+if (reducedMotion) { frame(); setTimeout(invalidate, 800); } else start();
+</script>
+</body>
+</html>

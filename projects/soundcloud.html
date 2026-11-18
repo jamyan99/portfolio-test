@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="theme-color" content="#050B18">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SoundCloud — Jamiyan Batnyam</title>
+<meta name="description" content="SoundCloud for Spotify users: a UX research case study. Usability testing with 14 Spotify users across three rounds, from the real app to a coded redesign. Student team project, 2026.">
+<link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="canonical" href="https://jamiyanbatnyam.com/projects/soundcloud.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jamiyan Batnyam">
+<meta property="og:title" content="SoundCloud — Jamiyan Batnyam">
+<meta property="og:description" content="SoundCloud for Spotify users: a UX research case study. Usability testing with 14 Spotify users across three rounds, from the real app to a coded redesign. Student team project, 2026.">
+<meta property="og:url" content="https://jamiyanbatnyam.com/projects/soundcloud.html">
+<meta property="og:image" content="https://jamiyanbatnyam.com/assets/img/soundcloud/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Four phones showing a SoundCloud redesign for Spotify users: the full player, an artist page, Saved songs and an ad in the mini player.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@500,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="../assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+/* Before anything renders: mark script support, and apply the OS Reduce
+   motion setting so no animation or page transition starts first. */
+(function (root) {
+  root.classList.add("js");
+  // Clear the choice the old footer toggle used to save; the OS setting rules now.
+  try { localStorage.removeItem("reduceMotion"); } catch (e) {}
+  try { if (matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("motion-off"); } catch (e) {}
+}(document.documentElement));
+</script>
+<!-- Chromium: start loading a page as soon as its link is hovered, so the click is instant -->
+<script type="speculationrules">
+{ "prerender": [{ "where": { "href_matches": "/*" }, "eagerness": "moderate" }] }
+</script>
+<style>
+
+/* ==========================================================================
+   Tokens
+   Themed with Liminal v3 (Figma "00 — Design System", 3592:1912): soft,
+   warm, slightly whimsical; light lavender canvas, never clinical. Figtree
+   throughout the case study; site chrome (top nav, footer) keeps Satoshi +
+   Inter to match the rest of the portfolio. Media frames float on the
+   lavender-tinted elevation instead of an outline.
+   ========================================================================== */
+:root {
+  --bg: #F5F3FA;            /* bg/canvas */
+  --surface: #FFFFFF;       /* bg/card */
+  --surface-sunk: #EDE9F7;  /* bg/sunken */
+  --ink: #241B4A;           /* text/primary, 14.3:1 on canvas */
+  --ink-dim: #5B5387;       /* text/muted, 6.3:1 on canvas */
+  --line: #E3DEF3;          /* border/default */
+
+  /* Liminal v3 palette. Old names kept so every rule below re-themes. */
+  --periwinkle: #CEBCFC;    /* accent/primary-soft */
+  --violet: #6256BA;        /* accent/primary, 5.4:1 on canvas */
+  --indigo: #4A3F94;        /* accent/primary-strong */
+  --slate-lav: #8F87B3;
+  --blush: #EDE9F7;         /* bg/sunken */
+  --tile: #F3EFFE;          /* bg/tile */
+  --accent-soft: #E5DDFC;
+  --sky: #3D92D6;  --sky-soft: #D2E9FC;
+  --mint: #32A37B; --mint-soft: #CDF3E5;
+  --brand-purple: #6256BA;
+
+  /* Test-result semantics: kept as data colours, not brand, and darkened
+     enough that the text beside each dot passes AA. */
+  --res-pass: #2E7D32;
+  --res-pass-fill: #43A047;
+  --res-confuse: #8A6A00;
+  --res-confuse-fill: #D9B23A;
+  --res-fail: #C62828;
+  --res-fail-fill: #E03B3B;
+
+  /* v3 elevation scale: lavender-tinted, never neutral grey */
+  --elev-card: 0 2px 8px rgba(74, 56, 135, 0.06);
+  --elev-raised: 0 6px 18px rgba(74, 56, 135, 0.08);
+  --elev-floating: 0 12px 32px rgba(74, 56, 135, 0.12);
+  --frame: var(--elev-floating);
+
+  /* the soft lavender wash behind the hero and the screens */
+  --wash: radial-gradient(120% 90% at 50% 20%, #F5F1FF 0%, var(--accent-soft) 55%, var(--periwinkle) 100%);
+
+  --font-display: "Figtree", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-chrome-display: "Satoshi", "Inter", system-ui, sans-serif;
+  --font-chrome-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius: 24px;
+  --radius-sm: 16px;
+
+  /* spacing scale */
+  --space-2xs: 8px;
+  --space-xs: 12px;
+  --space-s: 16px;
+  --space-m: 24px;
+  --space-l: 40px;
+  --space-xl: 64px;
+  --space-2xl: 112px;
+
+  /* rhythm */
+  --gap-section: var(--space-2xl);  /* between Tier 2 sections   */
+  --gap-block: var(--space-xl);     /* between Tier 3 blocks      */
+  --card-pad: var(--space-l);       /* inside every white card    */
+
+  /* type scale — Tier 2 is 1.8x Tier 3 and a heavier weight */
+  --h1: 44px;
+  --t2: 36px;
+  --t3: 20px;
+  --t1: 14px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --gap-section: 72px;
+    --gap-block: 48px;
+    --card-pad: var(--space-m);
+    --h1: 34px;
+    --t2: 28px;   /* 1.56x Tier 3 */
+    --t3: 18px;
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+img, video { display: block; max-width: 100%; }
+h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--brand-purple); outline-offset: 3px; border-radius: 4px; }
+strong { font-weight: 600; color: var(--ink); }
+
+/* site chrome stays in the portfolio's own type */
+.skip-link, .site-footer { font-family: var(--font-chrome-body); }
+
+.skip-link {
+  position: absolute; left: 16px; top: -48px;
+  background: var(--ink); color: #fff; padding: 10px 14px; border-radius: 8px;
+  font-size: 14px; text-decoration: none; z-index: 20;
+}
+.skip-link:focus { top: 12px; }
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+.layout {
+  max-width: 1240px; margin: 0 auto; padding: 40px 24px 0;
+  display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 56px;
+}
+.content { min-width: 0; max-width: 960px; }
+
+.rail {
+  position: sticky; top: calc(var(--site-header-h) + 32px); align-self: start;
+  background: var(--surface); border-radius: var(--radius-sm); padding: 14px 16px 13px;
+}
+.rail__eyebrow {
+  margin: 0 0 14px; font: 500 9px/1 var(--font-body);
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim);
+}
+.rail__nav { display: flex; flex-direction: column; gap: 2px; }
+.rail a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 7px 0; font-size: 12px; line-height: 1.4;
+  color: var(--ink-dim); text-decoration: none;
+}
+.rail__num {
+  flex: none; font-size: 9px; letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums; color: var(--ink-dim); opacity: .65;
+}
+.rail a:hover { color: var(--ink); }
+.rail a:hover .rail__num { opacity: 1; }
+.rail a[aria-current="true"] { color: var(--brand-purple); font-weight: 700; }
+.rail a[aria-current="true"] .rail__num { color: var(--brand-purple); opacity: 1; }
+
+.rail__progress { margin-top: 20px; }
+/* beats the display:flex the mobile rule sets, so [hidden] still hides it */
+.rail__progress[hidden] { display: none; }
+.rail__bar { height: 2px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.rail__bar > span {
+  display: block; height: 100%; width: 100%;
+  background: var(--brand-purple); transform: scaleX(0); transform-origin: left;
+}
+.rail__meta {
+  margin: 8px 0 0; font: 500 9px/1.4 var(--font-body);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; gap: 0; padding-top: 0; }
+  .rail {
+    position: sticky; top: var(--site-header-h); z-index: 10;
+    /* Without this the grid item takes its min-content width from the nav,
+       and overflow-x on the nav does not reduce that contribution. */
+    min-width: 0;
+    margin: 0 -24px 32px; padding: 10px 24px 9px; border-radius: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rail__eyebrow { display: none; }
+  .rail__nav {
+    flex-direction: row; gap: 20px; overflow-x: auto; scrollbar-width: none;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail a { white-space: nowrap; padding: 0; min-height: 40px; gap: 7px; }
+  .rail__progress { margin-top: 7px; display: flex; align-items: center; gap: 12px; }
+  .rail__bar { flex: 1; }
+  .rail__meta { flex: none; margin: 0; }
+  /* clear the taller sticky rail when jumping to an anchor. !important: the
+     plain .section rule further down and the inline 72px on some sections
+     would otherwise win, and the heading would land under the strip. */
+  .section, .intro { scroll-margin-top: 104px !important; }
+}
+
+/* ==========================================================================
+   Type tiers
+   Tier 1 eyebrow · Tier 2 section heading · Tier 3 subheading
+   ========================================================================== */
+/* Tier 1 wears v3/Section: the uppercase label every group in the app opens with */
+.eyebrow { font: 600 var(--t1)/1.4 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand-purple); margin-bottom: var(--space-2xs); }
+.t2 { font: 700 var(--t2)/1.15 var(--font-display); letter-spacing: -0.015em; }
+.t3 { font: 600 var(--t3)/1.3 var(--font-display); letter-spacing: -0.005em; }
+.body { color: var(--ink-dim); max-width: 64ch; }
+.t3 + .body, .t3 + .body-group { margin-top: var(--space-xs); }
+.body + .body { margin-top: var(--space-s); }
+.section-head .body { margin-top: var(--space-m); }
+
+/* ==========================================================================
+   Rhythm: sections and blocks
+   ========================================================================== */
+.section { margin-top: var(--gap-section); scroll-margin-top: 72px; }
+.section-head + .block { margin-top: var(--space-l); }
+.block + .block,
+.rings + .block { margin-top: var(--gap-block); }
+.block > .t3 + .body + .media-row,
+.block > .t3 + .body + .card,
+.block > .t3 + .body + .ticker,
+.block > .t3 + .card,
+.block > .body + .card { margin-top: var(--space-m); }
+
+/* ==========================================================================
+   Surfaces
+   ========================================================================== */
+.card { background: var(--surface); border-radius: var(--radius); padding: var(--card-pad); }
+
+/* fit: contain media inside a sized box so it can never be clipped */
+.fit { position: relative; }
+.fit > img, .fit > video {
+  position: absolute; inset: var(--fit-pad, 24px);
+  width: calc(100% - 2 * var(--fit-pad, 24px));
+  height: calc(100% - 2 * var(--fit-pad, 24px));
+  object-fit: contain;
+}
+
+/* ==========================================================================
+   My contribution: what was the team's and what was mine
+   ========================================================================== */
+.contribution__list { margin: var(--space-xs) 0 0; padding-left: 20px; max-width: 64ch; color: var(--ink-dim); }
+.contribution__list li + li { margin-top: 6px; }
+
+/* ==========================================================================
+   Hero + header
+   ========================================================================== */
+.hero-media { border-radius: var(--radius); overflow: hidden; aspect-ratio: 7 / 4; background: var(--surface-sunk); }
+.hero-media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Hero: the v3 splash lockup (icon, wordmark, tagline), built live */
+.hero-brand {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(16px, 2.6vw, 28px); padding: var(--space-m); text-align: center;
+  background: var(--wash);
+}
+.hero-brand .hero-brand__icon {
+  width: clamp(72px, 13%, 128px); height: auto; aspect-ratio: 1;
+  border-radius: 23%; box-shadow: var(--elev-floating);
+}
+/* v3/Display, with the splash screen's open tracking on the lowercase wordmark */
+.hero-brand__name { font: 700 clamp(32px, 4.6vw, 48px)/1 var(--font-display); letter-spacing: 0.03em; color: var(--ink); }
+.hero-brand__tag { margin-top: 10px; font: 400 clamp(15px, 1.7vw, 18px)/1.45 var(--font-body); color: var(--ink-dim); }
+@media (max-width: 560px) { .hero-brand { aspect-ratio: 4 / 3; } }
+
+.case-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 32px;
+  margin-top: var(--space-xl);
+}
+.case-title { font: 700 var(--h1)/1.1 var(--font-display); letter-spacing: -0.02em; }
+.case-sub { margin-top: 6px; color: var(--ink-dim); font-size: 14px; }
+.facts { display: flex; flex-wrap: wrap; gap: 16px 56px; }
+.facts dt { font: 600 16px/1.3 var(--font-display); }
+.facts dd { margin-top: 4px; color: var(--ink-dim); font-size: 14px; }
+@media (max-width: 560px) {
+  .case-head { flex-direction: column; gap: 20px; }
+  .facts { gap: 16px 40px; }
+}
+
+.intro { margin-top: var(--space-xl); }
+
+/* v3 screens are Figma exports at 2x (804 x 1748). The frame's 36px corner
+   radius is set as a percentage of each axis, so it scales with the image. */
+.shot {
+  display: block; width: 100%; height: auto; aspect-ratio: 402 / 874;
+  border-radius: 8.955% / 4.119%; background: var(--bg);
+}
+
+/* My Roles showcase: the v3 screens in three phone renders. The trio runs
+   full width; the floating pair and the flat lay share the row below. */
+.mockups {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-s);
+  margin-top: var(--space-xl);
+}
+.mockups img { width: 100%; height: auto; border-radius: var(--radius); background: var(--surface-sunk); }
+.mockups__wide { grid-column: 1 / -1; }
+@media (max-width: 560px) { .mockups { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   Two-column text + media
+   Rule: the first split in each Tier 2 section puts media on the right,
+   then splits alternate within that section.
+   ========================================================================== */
+.split {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: var(--space-xl); align-items: center;
+}
+.split--media-left { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+.split--media-left .split__media { order: -1; }
+@media (max-width: 760px) {
+  .split, .split--media-left { grid-template-columns: 1fr; gap: var(--space-m); }
+  .split--media-left .split__media { order: 0; }
+}
+
+/* the v3 floating elevation on every media frame, nowhere else */
+.hero-media, .mockups img, .statement { box-shadow: var(--frame); }
+
+/* Problem Space: the old poster's line, set live on the accent-soft panel */
+.statement {
+  margin: 0; padding: var(--space-l); border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.statement img { width: 64px; height: 64px; }
+.statement p {
+  margin-top: var(--space-m);
+  font: 700 30px/1.22 var(--font-display); letter-spacing: -0.015em; color: var(--ink);
+}
+@media (max-width: 760px) {
+  .statement { padding: var(--space-m); }
+  .statement img { width: 52px; height: 52px; }
+  .statement p { font-size: 24px; }
+}
+
+/* Final Delivery: each feature as its v3 flow, four screens in order.
+   Every screen opens full size in the viewer. */
+.flow {
+  list-style: none; margin: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-m);
+}
+.flow__open {
+  display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in;
+  border-radius: 8.955% / 4.119%;   /* the focus ring follows the screen's corners */
+}
+.flow__open .shot { box-shadow: 0 0 0 1px var(--line), var(--elev-raised); }
+.flow__cap { margin-top: var(--space-s); font: 600 15px/1.3 var(--font-display); color: var(--ink); }
+.flow__n {
+  display: block; margin-bottom: 6px;
+  font: 700 12px/1 var(--font-body); letter-spacing: 0.06em; color: var(--violet);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-l) var(--space-s); }
+  .flow__cap { margin-top: var(--space-xs); font-size: 14px; }
+}
+
+.evidence__open {
+  position: relative; display: block; width: 100%; aspect-ratio: 4 / 3;
+  padding: 0; border: 0; border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--tile); cursor: zoom-in;
+}
+.evidence__open img { width: 100%; height: 100%; object-fit: contain; }
+.evidence__chip {
+  position: absolute; right: 10px; bottom: 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 11px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95); color: var(--ink);
+  font: 500 13px/1 var(--font-body);
+  box-shadow: 0 2px 8px rgba(74, 56, 135, 0.14);
+}
+.evidence__chip svg { width: 14px; height: 14px; }
+.evidence__open:hover .evidence__chip { background: #fff; box-shadow: 0 4px 12px rgba(74, 56, 135, 0.18); }
+
+
+.text-button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 0;
+  background: none; border: 0; cursor: pointer;
+  font: 500 14px/1.2 var(--font-body); color: var(--ink-dim);
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #CFC9E2;
+}
+.text-button:hover { color: var(--ink); text-decoration-color: currentColor; }
+.text-button svg { width: 14px; height: 14px; flex: none; }
+
+
+/* ==========================================================================
+   Full-size viewer
+   ========================================================================== */
+.lightbox {
+  width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh;
+  margin: 0; padding: 0; border: 0; background: transparent;
+}
+.lightbox::backdrop { background: rgba(36, 27, 74, 0.9); }
+.lightbox__stage {
+  width: 100%; height: 100%; display: grid; place-items: center; padding: 64px 20px 24px;
+  /* a definite cell, so the image's max-height: 100% resolves and tall screens fit */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+}
+.lightbox__stage img { max-width: min(1600px, 100%); max-height: 100%; object-fit: contain; border-radius: 8px; background: #fff; }
+/* a v3 screen keeps its own corner radius in the viewer */
+.lightbox__stage img.is-shot { border-radius: 8.955% / 4.119%; background: var(--bg); }
+.lightbox__close {
+  position: fixed; top: 16px; right: 16px;
+  padding: 10px 16px; border: 0; border-radius: 999px; cursor: pointer;
+  background: #fff; color: var(--ink); font: 500 14px/1 var(--font-body);
+}
+
+
+/* ==========================================================================
+   Liminal: research statistics
+   The four counts were a flattened image with a red rule that fought the
+   brand. Rebuilt as live text; the original card stays alongside as evidence.
+   ========================================================================== */
+.stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: var(--space-l); align-items: center; }
+@media (max-width: 760px) { .stats { grid-template-columns: 1fr; gap: var(--space-m); } }
+
+.stats__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.stat { background: var(--blush); padding: var(--space-m) var(--space-s); text-align: center; }
+.stat:nth-child(2), .stat:nth-child(3) { background: var(--tile); }
+.stat__num { font: 700 40px/1 var(--font-display); letter-spacing: -0.02em; color: var(--indigo); }
+.stat__label { margin-top: 6px; font: 500 14px/1.3 var(--font-body); color: var(--ink-dim); }
+@media (max-width: 760px) { .stat__num { font-size: 32px; } .stat__label { font-size: 13px; } }
+
+/* ==========================================================================
+   Liminal: 189 data points
+   Was an image of a grid of unreadable notes. Rebuilt so the count itself
+   is the graphic; the original stays one click away.
+   ========================================================================== */
+.datapoints { position: relative; }
+.datapoints__grid {
+  display: grid; grid-template-columns: repeat(21, minmax(0, 1fr));
+  gap: 4px; padding: 2px;
+}
+.datapoints__grid span { display: block; aspect-ratio: 3 / 4; border-radius: 2px; background: var(--periwinkle); opacity: 0.55; }
+.datapoints__count {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  padding: 14px 26px; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  font: 700 clamp(16px, 4.2vw, 40px)/1 var(--font-display); letter-spacing: -0.02em; color: var(--ink);
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(74, 56, 135, 0.14);
+}
+.datapoints__foot { margin-top: var(--space-m); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; }
+.datapoints__foot .caption { margin: 0; }
+@media (max-width: 760px) {
+  .datapoints__grid { grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; }
+  .datapoints__count { padding: 10px 16px; }
+}
+
+/* ==========================================================================
+   Liminal: interview findings
+   Each finding pairs its own illustration with the statement. The art is a
+   full 3D scene with its own backdrop, so it fills the tile edge to edge.
+   ========================================================================== */
+.findings {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-m);
+  margin-top: var(--space-l); padding: 0; list-style: none;
+}
+.finding__art {
+  position: relative; aspect-ratio: 1; border-radius: var(--radius-sm);
+  background: var(--tile); overflow: hidden;   /* shows while the image loads */
+}
+.finding__art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.finding__text { margin-top: var(--space-s); padding-top: var(--space-s); border-top: 1px solid var(--line); }
+.finding__n { font: 700 13px/1 var(--font-body); color: var(--violet); letter-spacing: 0.02em; }
+.finding__text p { margin-top: 10px; font: 600 19px/1.3 var(--font-display); letter-spacing: -0.01em; text-wrap: balance; }
+@media (max-width: 960px) {
+  .findings { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-l); }
+}
+@media (max-width: 520px) {
+  .findings { gap: var(--space-l) var(--space-s); margin-top: var(--space-m); }
+  .finding__art { border-radius: 12px; }
+  .finding__text { margin-top: var(--space-xs); padding-top: var(--space-xs); }
+  .finding__text p { margin-top: 6px; font-size: 15px; }
+}
+
+/* ==========================================================================
+   Liminal: feature cards (SubLab, Meditation, Journal, Community)
+   Four stock illustrations in four unrelated styles, so each gets the same
+   tinted square frame; Definition and How It Works are visibly different.
+   ========================================================================== */
+.feature { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--space-l); align-items: start; }
+.feature + .feature { margin-top: var(--space-m); }
+.feature__art {
+  aspect-ratio: 1; border-radius: var(--radius-sm); background: var(--tile);
+  display: grid; place-items: center; padding: 14px; overflow: hidden;   /* keeps it square: tall art must not stretch the box */
+}
+.feature__art { position: relative; }
+.feature__art img { position: absolute; inset: 14px; width: calc(100% - 28px); height: calc(100% - 28px); object-fit: contain; }
+.feature__name { font: 700 22px/1.2 var(--font-display); letter-spacing: -0.015em; }
+.def { margin-top: var(--space-m); }
+.def dt {
+  font: 500 12px/1 var(--font-body); color: var(--indigo);
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.def dd { margin: 10px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink-dim); }
+.def + .def { margin-top: var(--space-m); }
+@media (max-width: 760px) {
+  .feature { grid-template-columns: 1fr; gap: var(--space-s); }
+  .feature__art { width: 88px; padding: 10px; }
+  .feature__name { font-size: 19px; }
+  .def { margin-top: var(--space-s); }
+  .def dd { font-size: 14px; }
+}
+
+/* ==========================================================================
+   Liminal: pull quote (sleep science)
+   ========================================================================== */
+.quote { border-left: 3px solid var(--violet); padding-left: var(--space-m); }
+.quote blockquote { margin: 0; font: 500 22px/1.4 var(--font-display); letter-spacing: -0.01em; }
+.quote figcaption { margin-top: 10px; font-size: 14px; color: var(--ink-dim); }
+@media (max-width: 760px) { .quote blockquote { font-size: 18px; } }
+
+/* ==========================================================================
+   Liminal: test results
+   Two rounds of the same six-task test. Rebuilt as real tables so the
+   before/after is readable, and so screen readers get the grid.
+   ========================================================================== */
+.rounds { display: grid; gap: var(--space-m); }
+.round__head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.round__label { font: 500 13px/1 var(--font-body); color: var(--indigo); }
+.round__title { font: 700 20px/1.2 var(--font-display); letter-spacing: -0.01em; }
+
+/* the one number that carries the comparison */
+.round__score { display: flex; align-items: baseline; gap: 8px; }
+.round__pct { font: 700 32px/1 var(--font-display); letter-spacing: -0.02em; color: var(--res-pass); }
+.round__pct--low { color: var(--res-confuse); }
+.round__pctlabel { font-size: 13px; color: var(--ink-dim); }
+
+.results { width: 100%; border-collapse: collapse; margin-top: var(--space-m); }
+.results caption { text-align: left; font-size: 13px; color: var(--ink-dim); padding-bottom: 10px; }
+.results th, .results td { padding: 8px 4px; text-align: center; font: 500 13px/1.2 var(--font-body); }
+.results thead th { color: var(--ink-dim); font-weight: 500; border-bottom: 1px solid var(--line); }
+.results tbody th { text-align: left; font-weight: 500; white-space: nowrap; padding-right: 12px; }
+.results tbody tr + tr td, .results tbody tr + tr th { border-top: 1px solid #F2F0F8; }
+.dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; }
+.dot--S { background: var(--res-pass-fill); }
+.dot--C { background: var(--res-confuse-fill); }
+.dot--U { background: var(--res-fail-fill); }
+
+.tasks { margin-top: var(--space-m); padding-top: var(--space-m); border-top: 1px solid var(--line); }
+.tasks h4 { font: 500 13px/1 var(--font-body); color: var(--ink-dim); }
+.tasks ol { margin: 12px 0 0; padding-left: 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; }
+.tasks li { font-size: 14px; line-height: 1.45; color: var(--ink-dim); }
+@media (max-width: 760px) { .tasks ol { grid-template-columns: 1fr; } }
+
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: var(--space-m); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; }
+.legend .dot--S + i { color: var(--res-pass); }
+.legend i { font-style: normal; }
+.legend span:nth-child(1) i { color: var(--res-pass); }
+.legend span:nth-child(2) i { color: var(--res-fail); }
+.legend span:nth-child(3) i { color: var(--res-confuse); }
+
+@media (max-width: 620px) {
+  .results th, .results td { padding: 7px 2px; font-size: 12px; }
+  .dot { width: 12px; height: 12px; }
+}
+
+/* the delta between the two rounds, shown where round 2 appears */
+.delta { display: flex; align-items: center; gap: var(--space-m); flex-wrap: wrap;
+  padding: var(--space-m) var(--space-l); border-radius: var(--radius-sm); background: var(--blush); }
+.delta__side { display: flex; align-items: baseline; gap: 8px; }
+.delta__num { font: 700 26px/1 var(--font-display); letter-spacing: -0.02em; }
+.delta__num--before { color: var(--res-confuse); }
+.delta__num--after { color: var(--res-pass); }
+.delta__cap { font-size: 13px; color: var(--ink-dim); }
+.delta__lead { flex: 0 0 100%; font-weight: 600; color: var(--ink); }
+.delta__arrow { color: var(--slate-lav); }
+@media (max-width: 620px) { .delta { padding: var(--space-m); gap: var(--space-s); } }
+
+/* ==========================================================================
+   Liminal: testing session photos
+   The photo board sits in a card like the Interviews box. It carries its own
+   "we conducted ... user interviews" line, so there is no sentence beside it.
+   ========================================================================== */
+.testing__photo { margin-top: var(--space-m); }
+.testing__photo.evidence__open { aspect-ratio: auto; background: transparent; }
+.testing__photo img { height: auto; }
+
+/* ==========================================================================
+   Ideation pair
+   ========================================================================== */
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-l); }
+@media (max-width: 760px) { .pair { grid-template-columns: 1fr; gap: var(--space-m); } }
+
+/* ==========================================================================
+   Ticker carousels (Low-Fi and Mid-Fi Wireframes)
+   With script they loop endlessly (is-looping): the screens are cloned once,
+   so the track slides by exactly half its width and starts over without a
+   seam. The loop pauses under the pointer. Reduce motion (the OS setting) turns a strip back into a plain horizontal scroller
+   (touch, trackpad, drag, arrow keys), which is also what shows without
+   script.
+   ========================================================================== */
+.ticker__viewport {
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: thin; padding-bottom: 8px;
+}
+.ticker__viewport:focus-visible { outline-offset: 4px; }
+.ticker__track { display: flex; gap: var(--space-s); list-style: none; margin: 0; padding: 0; width: max-content; }
+.ticker__track img {
+  height: var(--ticker-h); width: auto; max-width: none;
+  border-radius: var(--radius-sm); background: var(--surface);
+}
+.ticker--wireframes { --ticker-h: 420px; }
+@media (max-width: 760px) {
+  .ticker--wireframes { --ticker-h: 300px; }
+}
+.ticker [data-clone] { display: none; }
+.ticker.is-looping [data-clone] { display: block; }
+.ticker.is-looping .ticker__viewport {
+  overflow: hidden; padding-bottom: 0;   /* no scrollbar to make room for */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+/* the spacing rides on each item instead of the gap, so half the track is
+   exactly one whole set and the jump back to the start is invisible. The
+   duration is set by script from the strip's width, for a steady speed. */
+.ticker.is-looping .ticker__track { gap: 0; animation: ticker-loop 55s linear infinite; }
+.ticker.is-looping .ticker__track > li { padding-right: var(--space-s); }
+.ticker.is-looping:hover .ticker__track { animation-play-state: paused; }
+@keyframes ticker-loop { to { transform: translateX(-50%); } }
+
+/* ==========================================================================
+   Full-width media
+   ========================================================================== */
+.card--media img { width: 100%; height: auto; border-radius: 8px; }
+
+/* ==========================================================================
+   Style Guide (live, from the Liminal v3 design system in Figma)
+   ========================================================================== */
+.sg > * + * { margin-top: var(--space-l); padding-top: var(--space-l); border-top: 1px solid var(--line); }
+.sg__title { font: 700 30px/1.15 var(--font-display); letter-spacing: -0.015em; }
+.sg__label { font: 600 var(--t1)/1.4 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand-purple); }
+.sg__sub { margin-top: 4px; font-size: 14px; color: var(--ink-dim); }
+
+.sg__art { list-style: none; margin: var(--space-m) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-m); }
+.sg__art li { text-align: center; }
+.sg__art img { width: auto; max-width: 100%; height: 150px; object-fit: contain; margin: 0 auto; }
+.sg__art b { display: block; margin-top: 8px; font: 600 16px/1.3 var(--font-display); }
+
+.sg__colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-l); }
+.sg__chips { list-style: none; margin: var(--space-s) 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.sg__chips li { font-size: 12px; line-height: 1.3; color: var(--ink-dim); }
+.sg__chips i {
+  display: block; aspect-ratio: 1; margin-bottom: 10px; border-radius: 16px; background: var(--c);
+  box-shadow: inset 0 0 0 1px rgba(36, 27, 74, 0.06), 0 3px 6px rgba(74, 56, 135, 0.07);
+}
+.sg__chips b { display: block; font: 600 14px/1.3 var(--font-display); color: var(--ink); }
+
+.sg__type { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-l); }
+.sg__specimen { margin-top: var(--space-s); color: var(--ink); }
+.sg__specimen--display { font: 700 52px/1.05 var(--font-display); letter-spacing: -0.02em; }
+.sg__specimen--body { font: 400 20px/1.5 var(--font-body); }
+
+.sg__icons { list-style: none; margin: var(--space-m) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.sg__icons img { width: 44px; height: 44px; }
+.sg__icons .sg__gap { width: 1px; height: 32px; background: var(--line); }
+
+@media (max-width: 760px) {
+  .sg__art { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg__art img { height: 120px; }
+  .sg__colors, .sg__type { grid-template-columns: 1fr; }
+  .sg__specimen--display { font-size: 42px; }
+  .sg__title { font-size: 26px; }
+}
+@media (max-width: 560px) {
+  .sg__chips { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 14px; }
+}
+.strip-card { --fit-pad: 0px; }
+.strip-card .fit { aspect-ratio: 8 / 3; }   /* Videos + Activities strips share 2.66:1 */
+.device-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-m); }
+.device-pair .fit { aspect-ratio: 4 / 3; --fit-pad: 0px; }
+@media (max-width: 560px) { .device-pair { grid-template-columns: 1fr; } }
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer { margin-top: var(--gap-section); border-top: 1px solid var(--line); }
+.site-footer__inner {
+  max-width: 1240px; margin: 0 auto; padding: 56px 24px 72px;
+  display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap;
+}
+.site-footer__display { font: 700 32px/1.1 var(--font-chrome-display); letter-spacing: -0.01em; }
+.site-footer__sub { margin-top: 8px; font-size: 14px; }
+.site-footer__cols { display: flex; gap: 72px; }
+.site-footer h2 { font: 500 15px/1.3 var(--font-chrome-display); margin-bottom: 12px; }
+.site-footer ul { list-style: none; margin: 0; padding: 0; }
+.site-footer li + li { margin-top: 8px; }
+.site-footer ul a { font-size: 14px; color: var(--ink-dim); text-decoration: none; }
+.site-footer ul a:hover { color: var(--ink); }
+
+/* --- footer utilities: copy email, reduce motion, back to top ------------ */
+.site-footer__bottom {
+  flex: 0 0 100%; width: 100%;                 /* own row inside the flex footer */
+  margin-top: var(--space-m); padding-top: var(--space-m);
+  border-top: 1px solid var(--line);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px;
+}
+.footer-btn {
+  appearance: none; background: transparent; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 15px;
+  font: 500 13px/1 var(--font-chrome-body); color: var(--ink-dim); text-decoration: none;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.footer-btn:hover { color: var(--ink); border-color: #CFC9E2; }
+/* beats display:inline-flex, so the script-only buttons stay hidden without JS */
+.footer-btn[hidden] { display: none; }
+.footer-btn--plain { border-color: transparent; padding-inline: 0; margin-left: auto; }
+.footer-btn--plain:hover { border-color: transparent; text-decoration: underline; text-underline-offset: 3px; }
+.footer-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.footer-status {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+/* Author-level motion kill switch. The CSS media query cannot be overridden
+   from script, so the toggle collapses durations instead. */
+html.motion-off { scroll-behavior: auto !important; }
+html.motion-off *, html.motion-off *::before, html.motion-off *::after {
+  animation-duration: 1ms !important; animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important; transition-delay: 0ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ==========================================================================
+   Motion layer
+   Browser features only: CSS transitions, CSS keyframes, IntersectionObserver.
+   Everything sits behind prefers-reduced-motion, nothing carries meaning on
+   its own, and nothing is hidden unless the script is running (.motion-ready).
+   Tuned per project: slower, settling without bounce, to match a calm wellness app.
+   ========================================================================== */
+:root {
+  --mo-fast: 170ms;
+  --mo-mid: 400ms;
+  --mo-slow: 620ms;
+  --mo-ease: cubic-bezier(.22, .61, .36, 1);
+  --mo-accent: var(--violet);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* --- press feedback ---------------------------------------------------- */
+  .evidence__open, .text-button, .lightbox__close {
+    transition: transform var(--mo-fast) var(--mo-ease);
+  }
+  .evidence__open:active, .text-button:active { transform: scale(0.98); }
+  .lightbox__close:active { transform: scale(0.94); }
+
+  .evidence__open, .text-button { position: relative; }
+  .evidence__open::after, .text-button::after {
+    content: ""; position: absolute; inset: -3px; border-radius: 14px;
+    border: 1.5px solid var(--mo-accent); opacity: 0; pointer-events: none;
+  }
+  .is-hit::after { animation: mo-ring 420ms var(--mo-ease); }
+  @keyframes mo-ring {
+    0%   { opacity: .85; transform: scale(1); }
+    100% { opacity: 0;   transform: scale(1.06); }
+  }
+
+  /* --- image buttons hint at the zoom ------------------------------------ */
+  @media (hover: hover) {
+    .evidence__open img { transition: transform var(--mo-mid) var(--mo-ease); }
+    .evidence__open:hover img { transform: scale(1.02); }
+    .evidence__chip { transition: transform var(--mo-fast) var(--mo-ease); }
+    .evidence__open:hover .evidence__chip { transform: translateY(-1px); }
+  }
+
+  /* --- flow screens lift like a tappable v3 card, and press in ------------ */
+  .flow__open { transition: transform var(--mo-fast) var(--mo-ease); }
+  .flow__open:active { transform: scale(0.98); }
+  @media (hover: hover) {
+    .flow__open .shot { transition: transform var(--mo-mid) var(--mo-ease), box-shadow var(--mo-mid) var(--mo-ease); }
+    .flow__open:hover .shot { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--line), var(--elev-floating); }
+  }
+
+  /* --- full-size viewer opens and closes --------------------------------- */
+  .lightbox[open] { animation: mo-fade var(--mo-mid) var(--mo-ease); }
+  .lightbox[open]::backdrop { animation: mo-fade var(--mo-mid) var(--mo-ease); }
+  .lightbox[open] .lightbox__stage img { animation: mo-zoom var(--mo-mid) var(--mo-ease); }
+  .lightbox.is-closing, .lightbox.is-closing::backdrop { animation: mo-fade var(--mo-fast) var(--mo-ease) reverse; }
+  @keyframes mo-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes mo-zoom { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+
+  /* --- side index --------------------------------------------------------- */
+  .rail a, .rail__num { transition: color var(--mo-mid) var(--mo-ease), opacity var(--mo-mid) var(--mo-ease); }
+
+  /* --- reveals: only once, only when the script is running ---------------- */
+  .motion-ready [data-reveal] { opacity: 0; }
+  .motion-ready [data-reveal="rise"]  { transform: translateY(14px); }
+  .motion-ready [data-reveal="scale"] { transform: scale(.92); }
+  .motion-ready [data-reveal="note"]  { transform: translateY(10px) scale(.97); }
+  .motion-ready [data-reveal="row"]   { transform: translateX(-8px); }
+  .motion-ready [data-reveal] {
+    transition: opacity var(--mo-mid) var(--mo-ease),
+                transform var(--mo-slow) var(--mo-ease);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+  .motion-ready [data-reveal].is-in { opacity: 1; transform: none; }
+  /* the sticky notes carry a rotation of their own — keep it on both ends */
+  .motion-ready [data-reveal="note"] { transform: translateY(10px) scale(.97) rotate(var(--tilt, 0deg)); }
+  .motion-ready [data-reveal="note"].is-in { transform: rotate(var(--tilt, 0deg)); }
+
+  /* result dots land with the row they belong to */
+  .motion-ready [data-reveal="row"] .dot { transform: scale(.4); opacity: .4;
+    transition: transform var(--mo-mid) var(--mo-ease), opacity var(--mo-mid) var(--mo-ease);
+    transition-delay: calc(var(--i, 0) * 90ms + 90ms); }
+  .motion-ready [data-reveal="row"].is-in .dot { transform: none; opacity: 1; }
+}
+
+/* ==========================================================================
+   Header fonts: Bricolage Grotesque and Manrope, self-hosted variable files
+   (licences in assets/fonts). On this page only the header uses them.
+   ========================================================================== */
+@font-face {
+  font-family: "Bricolage Grotesque"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/bricolage-grotesque-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Bricolage Grotesque"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/bricolage-grotesque-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Manrope"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/manrope-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Manrope"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url(../assets/fonts/manrope-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ==========================================================================
+   Global header
+   The same on every page. Fixed: transparent over the home hero until the
+   page scrolls, solid from the start everywhere else (site-header--solid).
+   It carries its own colours and type, so no page theme can restyle it.
+   ========================================================================== */
+/* One height for the header, scrolled or not, on every page: nothing in it
+   moves when the page scrolls or changes. Anchors and sticky elements read it. */
+:root { --site-header-h: 84px; }
+html { scroll-padding-top: var(--site-header-h); }
+
+.site-header {
+  --nav-paper: #F8F7F4; --nav-ink: #111216; --nav-muted: #656B7C; --nav-link: #51586C;
+  --nav-line: #DEDFE2; --nav-accent: #F3480B; --nav-accent-text: #C53606;
+  --nav-ease: cubic-bezier(.22, 1, .36, 1);
+  position: fixed; inset: 0 0 auto; z-index: 40;
+  /* content sits in the site's one container, 1192px wide with 24px gutters:
+     the same as the case studies, gallery, 404, footers and home page */
+  height: var(--site-header-h); padding: 0 max(24px, calc((100% - 1192px) / 2));
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid transparent;
+  color: var(--nav-ink); font: 400 16px/1.7 "Manrope", "Segoe UI", sans-serif;
+  letter-spacing: normal; text-transform: none; -webkit-font-smoothing: antialiased;
+}
+.site-header--solid, .site-header[data-scrolled="true"], html:not(.js) .site-header {
+  background: var(--nav-paper); border-bottom-color: var(--nav-line);
+}
+/* keeps the page clear of the fixed header where no hero sits under it */
+.site-header__spacer { height: var(--site-header-h); }
+.skip-link:focus { z-index: 100; }
+
+.site-header a { color: inherit; text-decoration: none; }
+.site-header :focus-visible { outline: 2px solid var(--nav-accent); outline-offset: 6px; }
+.wordmark:focus-visible, .main-nav a:not(.nav-contact):focus-visible { border-radius: 0; }
+.site-header svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.wordmark { display: flex; align-items: center; gap: 15px; flex-shrink: 0; font-size: 13px; font-weight: 600; line-height: 1.25; }
+.monogram { font: 700 38px/1 "Bricolage Grotesque", Arial, sans-serif; letter-spacing: -0.1em; padding-right: .1em; }
+.monogram span { color: var(--nav-accent); }
+.wordmark__copy { display: grid; gap: 3px; }
+.wordmark__copy strong { color: var(--nav-ink); font-size: 14px; font-weight: 700; letter-spacing: -0.035em; }
+.wordmark__copy small { color: var(--nav-muted); font-size: 12px; font-weight: 500; }
+
+.main-nav {
+  display: flex; align-items: center; gap: clamp(18px, 3vw, 48px);
+  margin-left: auto;
+  font-size: 14px; font-weight: 500;
+}
+.main-nav a { position: relative; padding: 12px 0; color: var(--nav-link); }
+.main-nav a:hover, .main-nav a[aria-current] { color: var(--nav-ink); }
+/* the current page (on a case study, Work) and the hovered link get a dot */
+.main-nav a::after {
+  content: ""; position: absolute; bottom: 1px; left: 50%;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--nav-accent);
+  transform: translateX(-50%) scale(0);
+}
+.main-nav a:hover::after, .main-nav a[aria-current]::after { transform: translateX(-50%) scale(1); }
+.main-nav .nav-contact {
+  display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 20px;
+  border: 1px solid rgba(17, 18, 22, .12); border-radius: 999px;
+  background: var(--nav-ink); color: #fff;
+}
+.main-nav .nav-contact:hover { background: var(--nav-accent-text); border-color: var(--nav-accent-text); color: #fff; }
+.main-nav .nav-contact::after { content: none; }
+
+.menu-toggle { display: none; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+/* beats the display:grid below, so the script-only button stays hidden without JS */
+.menu-toggle[hidden] { display: none !important; }
+.menu-toggle .icon-close, .menu-toggle[aria-expanded="true"] .icon-open { display: none; }
+.menu-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+@media (max-width: 1100px) {
+  .main-nav { gap: clamp(15px, 2vw, 25px); font-size: 13px; }
+  .main-nav .nav-contact { min-height: 42px; gap: 8px; padding-inline: 14px; }
+}
+@media (max-width: 760px) {
+  .js .menu-toggle {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    border: 1px solid rgba(17, 18, 22, .15); border-radius: 50%; background: rgba(248, 247, 244, .75);
+  }
+  .js .main-nav {
+    position: absolute; top: calc(100% - 1px); right: 12px; left: 12px;
+    display: none; flex-direction: column; align-items: stretch; gap: 0;
+    margin: 0; padding: 10px 22px 18px;
+    border: 1px solid rgba(17, 18, 22, .09); border-radius: 0 0 16px 16px;
+    background: rgba(248, 247, 244, .98); box-shadow: 0 18px 40px rgba(17, 18, 22, .1);
+  }
+  .js .main-nav.open { display: flex; }
+  .js .main-nav a { min-height: 46px; padding: 12px 0; font-size: 15px; }
+  .js .main-nav a::after { bottom: 8px; left: auto; right: 0; }
+  .js .main-nav .nav-contact { justify-content: center; margin-top: 9px; padding-inline: 18px; }
+}
+@media (max-width: 760px) {
+  :root { --site-header-h: 72px; }
+  .wordmark { gap: 11px; font-size: 11px; }
+  .monogram { font-size: 33px; }
+  .wordmark__copy strong { font-size: 12px; }
+  .wordmark__copy small { font-size: 10px; }
+  /* without script the links simply wrap under the wordmark */
+  html:not(.js) .site-header { position: static; height: auto; flex-wrap: wrap; gap: 6px 16px; padding-block: 16px; }
+  html:not(.js) .main-nav { flex-wrap: wrap; width: 100%; margin: 0; gap: 0 18px; }
+  html:not(.js) .site-header__spacer { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Two speeds, one curve: 160ms answers the pointer, 240ms is for things changing state. */
+  .site-header { transition: background-color 240ms var(--nav-ease), border-color 240ms var(--nav-ease); }
+  .main-nav a { transition: color 160ms var(--nav-ease); }
+  .main-nav a::after { transition: transform 160ms var(--nav-ease); }
+  .main-nav .nav-contact { transition: background-color 160ms var(--nav-ease), border-color 160ms var(--nav-ease); }
+  @media (max-width: 760px) {
+    .js .main-nav.open { animation: nav-menu-enter 240ms var(--nav-ease) both; }
+  }
+  @keyframes nav-menu-enter { from { opacity: 0; transform: translateY(-8px); } }
+}
+
+/* Moving between pages. The page cross-fades instead of flashing, and the
+   header is a layer of its own, so it holds still while the page changes
+   under it. Typed (page-nav) so a page's own same-page transitions, like the
+   Vibe Coding simulator's, keep their rules. Reduce motion skips it; browsers
+   without cross-document view transitions simply navigate. */
+@view-transition { navigation: auto; types: page-nav; }
+.site-header { view-transition-name: site-header; }
+html:active-view-transition-type(page-nav)::view-transition-old(root) { animation: 240ms cubic-bezier(.4, 0, .2, 1) both page-out; mix-blend-mode: plus-lighter; }
+html:active-view-transition-type(page-nav)::view-transition-new(root) { animation: 240ms cubic-bezier(.4, 0, .2, 1) both page-in; mix-blend-mode: plus-lighter; }
+@keyframes page-out { to { opacity: 0; } }
+@keyframes page-in { from { opacity: 0; } }
+html.motion-off::view-transition-group(*),
+html.motion-off::view-transition-old(*),
+html.motion-off::view-transition-new(*) { animation: none !important; }
+</style>
+<link rel="stylesheet" href="../assets/celestial.css">
+<link rel="stylesheet" href="../assets/sc-findings.css">
+<style id="celestial-case-overrides">
+
+/* Editorial theme. Screens, swatches and product demos retain their own identity. */
+body.celestial-case {
+  --bg: var(--celestial-bg, #050B18);
+  --surface: var(--celestial-surface, #0D1B2B);
+  --surface-sunk: var(--celestial-panel, #112235);
+  --ink: var(--celestial-text, #EEF3F8);
+  --ink-dim: var(--celestial-muted, #ADBDCF);
+  --line: var(--celestial-line, #2A4056);
+  --brand-purple: var(--celestial-accent, #A0E6D9);
+  --accent: var(--celestial-accent, #A0E6D9);
+  --accent-soft: #112B37;
+  --font-display: "Bricolage Grotesque", Arial, sans-serif;
+  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-chrome-display: "Bricolage Grotesque", Arial, sans-serif;
+  --font-chrome-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --frame: 0 0 0 1px var(--line), 0 14px 34px rgba(0, 0, 0, .16);
+  --elev-card: 0 3px 12px rgba(0, 0, 0, .14);
+  --elev-raised: 0 8px 22px rgba(0, 0, 0, .18);
+  --elev-floating: 0 16px 36px rgba(0, 0, 0, .22);
+  --mo-accent: var(--celestial-accent, #A0E6D9);
+  color: var(--ink);
+  background: var(--bg);
+}
+body.celestial-case .rail {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+body.celestial-case .rail a[aria-current="true"],
+body.celestial-case .rail a[aria-current="true"] .rail__num {
+  color: var(--celestial-accent, #A0E6D9);
+}
+body.celestial-case .rail__bar > span { background: var(--celestial-accent, #A0E6D9); }
+body.celestial-case .card,
+body.celestial-case .method { border: 1px solid var(--line); }
+body.celestial-case .hero-media { box-shadow: var(--frame); }
+body.celestial-case .case-title,
+body.celestial-case .t2,
+body.celestial-case .t3 { color: var(--ink); }
+body.celestial-case .eyebrow { color: var(--celestial-accent, #A0E6D9); }
+body.celestial-case .evidence__chip,
+body.celestial-case .datapoints__count {
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line), 0 6px 18px rgba(0, 0, 0, .2);
+}
+body.celestial-case .evidence__open:hover .evidence__chip,
+body.celestial-case .evidence__open:focus-visible .evidence__chip {
+  color: var(--celestial-accent, #A0E6D9);
+  background: var(--surface-sunk);
+  box-shadow: 0 0 0 1px var(--celestial-accent, #A0E6D9);
+}
+body.celestial-case .text-button { text-decoration-color: var(--line); }
+body.celestial-case .text-button:hover { text-decoration-color: currentColor; }
+body.celestial-case .lightbox::backdrop { background: rgba(3, 8, 18, .95); }
+body.celestial-case .lightbox__close {
+  background: var(--surface-sunk);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line);
+}
+body.celestial-case :focus-visible { outline-color: var(--celestial-accent, #A0E6D9); }
+body.celestial-case .skip-link { background: var(--celestial-accent, #A0E6D9); color: #050B18; }
+body.celestial-case .sg__chips i { box-shadow: 0 0 0 1px var(--line), 0 6px 14px rgba(0, 0, 0, .16); }
+
+body.celestial-case {
+  --periwinkle: #8DBAB9;
+  --violet: var(--celestial-accent, #A0E6D9);
+  --indigo: #B9DDDD;
+  --slate-lav: #8DA9BC;
+  --blush: #112235;
+  --tile: #132A3B;
+  --res-pass: #9CD8B1;
+  --res-confuse: #E5CD83;
+  --res-fail: #F5A7A5;
+  --res-pass-fill: #69BF89;
+  --res-confuse-fill: #D9B85D;
+  --res-fail-fill: #E98585;
+}
+body.celestial-case .results tbody tr + tr td,
+body.celestial-case .results tbody tr + tr th { border-color: var(--line); }
+/* This live splash lockup is product evidence, with Liminal's own type and palette. */
+body.celestial-case .hero-brand {
+  --ink: #241B4A;
+  --ink-dim: #5B5387;
+  --font-display: "Figtree", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, sans-serif;
+  background: radial-gradient(120% 90% at 50% 20%, #F5F1FF 0%, #E5DDFC 55%, #CEBCFC 100%);
+}
+body.celestial-case .sg__specimen { font-family: "Figtree", system-ui, sans-serif; }
+body.celestial-case .sg__icons { background: #F5F3FA; padding: 16px; border-radius: 12px; }
+body.celestial-case .sg__icons .sg__gap { background: #E3DEF3; }
+</style>
+<style id="soundcloud-case">
+/* ==========================================================================
+   SoundCloud case study: the pieces this page adds to the shared case template.
+   Everything uses the template's tokens, so it follows the celestial theme.
+   Participant colours are the team's rainbow sheet (P1 to P5).
+   ========================================================================== */
+body.celestial-case--soundcloud {
+  --p1: #F28B82; --p2: #FBBC6E; --p3: #FFE066; --p4: #8FD694; --p5: #7FB8F0;
+}
+
+/* Results at a glance, right under the title */
+.sc-glance {
+  margin-top: var(--space-l);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;
+  background: var(--line); border-radius: var(--radius-sm); overflow: hidden;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.sc-glance > div { background: var(--surface); padding: var(--space-m); }
+.sc-glance__num {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  font: 700 36px/1 var(--font-display); letter-spacing: -0.02em;
+}
+.sc-was { font-size: 24px; color: var(--res-fail); }
+.sc-arrow { font-size: 22px; color: var(--ink-dim); }
+.sc-now { color: var(--res-pass); }
+.sc-glance__label { margin-top: 10px; font: 500 15px/1.4 var(--font-body); color: var(--ink); }
+.sc-glance__cap { margin-top: var(--space-xs); }
+@media (max-width: 760px) {
+  .sc-glance { grid-template-columns: 1fr; }
+  .sc-glance__num { font-size: 32px; }
+}
+
+/* Challenge: the hypothesis on the statement panel */
+.sc-statement__label {
+  font: 600 13px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent);
+}
+.statement .sc-statement__label { margin-top: 0; font-size: 13px; letter-spacing: 0.08em; }
+
+/* Research approach: four methods in order */
+.sc-steps {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-s);
+}
+.sc-step { padding: var(--space-m); display: flex; flex-direction: column; gap: 8px; }
+.sc-step__when { font: 700 12px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.sc-step__title { font: 600 18px/1.25 var(--font-display); color: var(--ink); }
+.sc-step__who {
+  align-self: flex-start; padding: 5px 10px; border-radius: 999px;
+  background: var(--surface-sunk); font: 500 12px/1.2 var(--font-body); color: var(--ink);
+}
+.sc-step__text { font-size: 14px; line-height: 1.55; color: var(--ink-dim); }
+@media (max-width: 1100px) { .sc-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .sc-steps { grid-template-columns: 1fr; } }
+
+/* Rainbow sheet, rebuilt live from the team's synthesis */
+.sc-rainbow-wrap { margin-top: var(--space-m); overflow-x: auto; }
+.sc-rainbow { width: 100%; border-collapse: separate; border-spacing: 6px; }
+.sc-rainbow thead th { font: 600 13px/1 var(--font-body); color: var(--ink-dim); padding-bottom: 4px; }
+.sc-rainbow tbody th {
+  width: 40%; text-align: left; padding-right: 14px;
+  font: 500 15px/1.35 var(--font-body); color: var(--ink);
+}
+.sc-cell { width: 10%; min-width: 34px; height: 34px; border-radius: 8px; background: var(--surface-sunk); }
+.sc-cell.p1 { background: var(--p1); } .sc-cell.p2 { background: var(--p2); } .sc-cell.p3 { background: var(--p3); }
+.sc-cell.p4 { background: var(--p4); } .sc-cell.p5 { background: var(--p5); }
+.sc-count { padding-left: 10px; text-align: right; white-space: nowrap; font: 700 18px/1 var(--font-display); color: var(--ink); }
+.sc-quiet th, .sc-quiet .sc-count { color: var(--ink-dim); font-weight: 500; }
+.sc-rainbow + .caption, .sc-rainbow-wrap + .caption { margin-top: var(--space-s); }
+@media (max-width: 620px) {
+  .sc-rainbow { border-spacing: 3px; }
+  .sc-rainbow tbody th { width: 50%; font-size: 13px; line-height: 1.3; padding-right: 6px; }
+  .sc-cell { width: 8%; min-width: 18px; height: 24px; border-radius: 5px; }
+  .sc-count { font-size: 14px; padding-left: 4px; }
+}
+
+/* Findings: what we saw, what we changed, what the next round showed */
+.sc-finding {
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--space-xl); align-items: start;
+}
+.sc-finding--wide { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+.sc-finding__num { font: 700 12px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.sc-finding .t3 { font-size: 24px; }
+.sc-finding .t3 + .body { margin-top: var(--space-xs); }
+.sc-finding .results tbody th { white-space: normal; min-width: 10em; }
+.sc-finding .results td.sc-n { font: 700 14px/1 var(--font-display); color: var(--ink); text-align: right; padding-left: 10px; }
+.sc-quote { margin: var(--space-m) 0 0; }
+.sc-quote blockquote { font-size: 20px; }
+.sc-sub {
+  margin-top: var(--space-l);
+  font: 600 12px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim);
+}
+.sc-sub + .body { margin-top: var(--space-xs); }
+.sc-result {
+  margin-top: var(--space-m); padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-sm); border-left: 3px solid var(--res-pass-fill);
+  background: var(--surface-sunk); font: 500 15px/1.55 var(--font-body); color: var(--ink);
+}
+.sc-result strong { color: var(--ink); }
+.sc-result .sc-good { color: var(--res-pass); }
+.sc-result .sc-warn { color: var(--res-confuse); }
+.sc-result--open { border-left-color: var(--res-confuse-fill); }
+
+.sc-phones { display: flex; gap: var(--space-s); justify-content: center; align-items: flex-start; }
+.sc-phones figure { margin: 0; flex: 1 1 0; max-width: 240px; }
+.sc-phones--three figure { max-width: 200px; }
+.sc-phones .shot { box-shadow: 0 0 0 1px var(--line), var(--elev-raised); }
+.sc-phones figcaption {
+  margin-top: var(--space-xs); text-align: center;
+  font: 600 14px/1.35 var(--font-display); color: var(--ink);
+}
+.sc-tag {
+  display: block; width: max-content; margin: 0 auto 6px; padding: 4px 10px; border-radius: 999px;
+  background: var(--surface-sunk); box-shadow: 0 0 0 1px var(--line);
+  font: 600 11px/1.2 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-dim);
+}
+.sc-tag--new { background: rgba(160, 230, 217, .12); box-shadow: 0 0 0 1px rgba(160, 230, 217, .35); color: var(--accent); }
+@media (max-width: 960px) {
+  .sc-finding, .sc-finding--wide { grid-template-columns: 1fr; gap: var(--space-l); }
+  .sc-phones { justify-content: flex-start; }
+}
+@media (max-width: 560px) {
+  .sc-phones { gap: var(--space-xs); }
+  .sc-finding .t3 { font-size: 20px; }
+}
+
+/* Findings: the before/after stage (assets/sc-findings.css) leads; a Before / After pair of cards
+   carries the numbers under it. */
+.sc-find .t3 { font-size: clamp(22px, 2.3vw, 30px); }
+.sc-find .t3 + .scx-stage, .sc-find__lead + .scx-stage { margin-top: var(--space-m); }
+.sc-find__lead { margin-top: 10px; max-width: 62ch; font-size: 16px; line-height: 1.6; color: var(--ink-dim); }
+.sc-find__pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-s); margin-top: var(--space-s); }
+.sc-find__card {
+  padding: var(--space-m); border-radius: var(--radius-sm);
+  background: var(--surface); box-shadow: 0 0 0 1px var(--line);
+}
+.sc-find__card--after { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.sc-find__label { font: 700 12px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); }
+.sc-find__card--after .sc-find__label { color: var(--accent); }
+.sc-find__text { margin-top: 10px; font-size: 15px; line-height: 1.55; color: var(--ink-dim); }
+.sc-find__stat { margin-top: var(--space-s); font-size: 14px; line-height: 1.45; color: var(--ink-dim); }
+.sc-find__stat b { display: block; margin-bottom: 4px; font: 700 clamp(26px, 2.8vw, 34px)/1.1 var(--font-display); letter-spacing: -0.01em; color: var(--ink); }
+.sc-find__card--after .sc-find__stat b { color: var(--accent); }
+.sc-find__quote { margin-top: var(--space-s); padding-left: var(--space-s); }
+.sc-find__quote blockquote { font-size: 17px; }
+.sc-find__quote figcaption { font-size: 13px; }
+.sc-find__open {
+  margin-top: var(--space-s); padding: 10px 14px; border-radius: 12px;
+  background: var(--surface-sunk); border-left: 3px solid var(--res-confuse-fill);
+  font: 500 14px/1.45 var(--font-body); color: var(--ink);
+}
+.sc-find__dots { display: flex; align-items: center; gap: 12px; margin-top: var(--space-xs); }
+.sc-find__round { min-width: 64px; font: 600 13px/1 var(--font-body); color: var(--ink-dim); }
+.sc-dots { display: inline-flex; gap: 6px; }
+.sc-dots i { width: 18px; height: 18px; border-radius: 50%; background: var(--surface-sunk); box-shadow: inset 0 0 0 1px var(--line); }
+.sc-dots i.on { background: var(--accent); box-shadow: none; }
+.sc-find__dots b { font: 700 18px/1 var(--font-display); color: var(--ink); }
+.sc-find__dots-note { margin-top: 8px; font-size: 13px; color: var(--ink-dim); }
+@media (max-width: 760px) {
+  .sc-find__pair { grid-template-columns: 1fr; }
+  .sc-find__card { padding: var(--space-s); }
+}
+/* Recommendations and why-it-matters: three cards in a row */
+.sc-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-m); }
+.sc-trio .card { padding: var(--space-l) var(--space-m); }
+.sc-trio .t3 { margin-top: var(--space-xs); }
+.sc-trio .t3 + .body { margin-top: var(--space-xs); }
+.sc-label { font: 700 12px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.sc-label + .body { margin-top: var(--space-xs); }
+.sc-ask--now { box-shadow: 0 0 0 1px var(--accent) inset; }
+@media (max-width: 960px) { .sc-trio { grid-template-columns: 1fr; } }
+
+/* The template's flow strip, here inside its own card */
+#recommendations .flow { margin-top: var(--space-m); }
+</style>
+</head>
+<body class="celestial-site celestial-case celestial-case--soundcloud">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header site-header--solid" data-scrolled="false">
+  <a class="wordmark" href="../index.html#home" aria-label="Jamiyan Batnyam, home">
+    <span class="monogram" aria-hidden="true">JB<span>·</span></span>
+    <span class="wordmark__copy">
+      <strong>Jamiyan Batnyam</strong>
+      <small>UX / Product Designer</small>
+    </span>
+  </a>
+  <nav class="main-nav" id="main-nav" aria-label="Main">
+    <a href="../index.html#home">Home</a>
+    <a href="../index.html#projects" aria-current="true">Work</a>
+    <a href="../about.html">About</a>
+    <a href="../Jamiyan_Batnyam_Resume.pdf" target="_blank" rel="noopener">Résumé</a>
+    <a href="../visual.html">Gallery</a>
+    <a href="../playground.html">Playground</a>
+    <a href="../index.html#contact">Contact</a>
+    <a class="nav-contact" href="mailto:jamyanart@gmail.com">Let’s connect <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></a>
+  </nav>
+  <button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu" hidden>
+    <svg class="icon-open" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+    <svg class="icon-close" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+  </button>
+</header>
+<div class="site-header__spacer" aria-hidden="true"></div>
+<script>
+/* Global header, the same on every page: solid once the page leaves the top,
+   and the phone menu. */
+(function () {
+  "use strict";
+  var header = document.querySelector(".site-header");
+  if (!header) return;
+
+  var frame = 0;
+  var paint = function () {
+    frame = 0;
+    header.setAttribute("data-scrolled", window.scrollY > 40 ? "true" : "false");
+  };
+  window.addEventListener("scroll", function () {
+    if (!frame) frame = window.requestAnimationFrame(paint);
+  }, { passive: true });
+  paint();
+
+  var toggle = document.getElementById("menu-toggle");
+  var nav = document.getElementById("main-nav");
+  if (!toggle || !nav) return;
+  toggle.hidden = false;
+  var isOpen = function () { return nav.classList.contains("open"); };
+  var setMenu = function (open, returnFocus) {
+    nav.classList.toggle("open", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    if (open) {
+      var first = nav.querySelector("a");
+      if (first) first.focus({ preventScroll: true });
+    } else if (returnFocus) {
+      toggle.focus();
+    }
+  };
+  toggle.addEventListener("click", function () { setMenu(!isOpen()); });
+  nav.addEventListener("click", function (e) { if (isOpen() && e.target.closest("a")) setMenu(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen()) setMenu(false, true); });
+  document.addEventListener("pointerdown", function (e) { if (isOpen() && !header.contains(e.target)) setMenu(false); });
+  header.addEventListener("focusout", function (e) {
+    if (isOpen() && e.relatedTarget && !header.contains(e.relatedTarget)) setMenu(false);
+  });
+}());
+</script>
+
+<div class="layout">
+  <aside class="rail">
+    <p class="rail__eyebrow">In this case study</p>
+    <nav class="rail__nav" aria-label="Case study sections">
+      <a href="#overview"><span class="rail__num" aria-hidden="true">01</span>Overview</a>
+      <a href="#challenge"><span class="rail__num" aria-hidden="true">02</span>Challenge</a>
+      <a href="#approach"><span class="rail__num" aria-hidden="true">03</span>Approach</a>
+      <a href="#findings"><span class="rail__num" aria-hidden="true">04</span>Findings</a>
+      <a href="#recommendations"><span class="rail__num" aria-hidden="true">05</span>Recommendations</a>
+      <a href="#impact"><span class="rail__num" aria-hidden="true">06</span>Impact</a>
+      <a href="#reflection"><span class="rail__num" aria-hidden="true">07</span>Reflection</a>
+    </nav>
+    <div class="rail__progress" id="rail-progress" hidden>
+      <div class="rail__bar" id="rail-bar" role="progressbar" aria-label="Reading progress"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <p class="rail__meta" id="rail-meta">0% read</p>
+    </div>
+  </aside>
+
+  <main id="main" class="content">
+
+    <!-- ================================================================ HERO -->
+    <section id="hero">
+      <!-- The project lookbook: four Round 2 prototype screens, captured at 3x from the live prototype -->
+      <div class="hero-media">
+        <img src="../assets/img/soundcloud/cover.jpg"
+             alt="Four phones showing our SoundCloud redesign: the full player with back, pause and next buttons, an artist page, Saved songs, and an ad playing in the mini player"
+             width="1920" height="1080">
+      </div>
+
+      <div class="case-head">
+        <div>
+          <h1 class="case-title">SoundCloud</h1>
+          <p class="case-sub">UX research case study · Student team project</p>
+        </div>
+        <dl class="facts">
+          <div><dt>Year</dt><dd>2026</dd></div>
+          <div><dt>Duration</dt><dd>10 Weeks</dd></div>
+          <div><dt>Team</dt><dd>3 people</dd></div>
+          <div><dt>My role</dt><dd>UX Research, Prototyping</dd></div>
+        </dl>
+      </div>
+
+      <!-- The result first: same tasks, real app (5 moderated sessions) vs. our final redesign (Round 2, 4 people) -->
+      <div class="sc-glance" role="list" aria-label="Results at a glance">
+        <div role="listitem">
+          <p class="sc-glance__num"><span class="sc-was">2/5</span><span class="sc-arrow" aria-hidden="true">&rarr;</span><span class="sc-now">0/4</span></p>
+          <p class="sc-glance__label">couldn’t change songs on their own</p>
+        </div>
+        <div role="listitem">
+          <p class="sc-glance__num"><span class="sc-was">4/5</span><span class="sc-arrow" aria-hidden="true">&rarr;</span><span class="sc-now">0/4</span></p>
+          <p class="sc-glance__label">weren’t sure their song had saved</p>
+        </div>
+        <div role="listitem">
+          <p class="sc-glance__num"><span class="sc-was">5/5</span><span class="sc-arrow" aria-hidden="true">&rarr;</span><span class="sc-now">0/4</span></p>
+          <p class="sc-glance__label">got stuck waiting out an ad</p>
+        </div>
+      </div>
+      <p class="caption sc-glance__cap">Real SoundCloud app, 5 moderated sessions &rarr; our final redesign, unmoderated Round 2 with 4 people.</p>
+    </section>
+
+    <!-- ============================================================ OVERVIEW -->
+    <section id="overview" class="intro" style="scroll-margin-top:72px">
+      <div class="block">
+        <h2 class="t3">Overview</h2>
+        <p class="body">Spotify users who try SoundCloud get stuck on things they do without thinking: skipping a song, saving one, getting past an ad. Over 10 weeks, our team of three tested SoundCloud with 14 Spotify users, redesigned the moments that broke, and tested the redesign twice.</p>
+        <p class="body">We worked as SoundCloud’s design team and finished with a recommendation to its product and engineering team: what to change first, and why.</p>
+      </div>
+      <div class="block">
+        <h2 class="t3">My Roles</h2>
+        <p class="body">UX Research, Prototyping</p>
+      </div>
+      <!-- DRAFT: J to review. Contribution lines are from the participant grid (A3: Jay moderated P3 on Oct 16 and P5 on Oct 17)
+           and the prototype history (Round 1 and Round 2 builds on jamyan99.github.io/soundcloud-prototype). -->
+      <div class="block">
+        <h2 class="t3">My contribution</h2>
+        <ul class="contribution__list">
+          <li>I designed and coded the interactive prototype we tested in both unmoderated rounds, then rebuilt it in the week between rounds based on what Round 1 showed.</li>
+          <li>I moderated 2 of our 5 sessions on the real SoundCloud app (P3 and P5).</li>
+          <li>The three of us planned the study, analyzed every session in a shared rainbow sheet, and wrote the recommendations together.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- =========================================================== CHALLENGE -->
+    <section id="challenge" class="section">
+      <div class="split">
+        <div>
+          <p class="eyebrow">The Challenge</p>
+          <h2 class="t2">Spotify habits don’t work on SoundCloud</h2>
+          <p class="body" style="margin-top:var(--space-m)">SoundCloud has music you can’t get on Spotify: new artists and songs that only live there. But a Spotify user opening it for the first time brings years of habits with them. Our brief was to find out how well SoundCloud serves these new users, and what it should change first.</p>
+        </div>
+        <figure class="split__media statement">
+          <p class="sc-statement__label">Our hypothesis</p>
+          <p>Spotify users struggle wherever SoundCloud breaks a habit Spotify taught them.</p>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================================================ APPROACH -->
+    <section id="approach" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Research Approach</p>
+        <h2 class="t2">Find the problems, then test the fixes</h2>
+        <p class="body">Each method answered a different question. The heuristic review told us where to look, the moderated sessions showed us why people got stuck, and two unmoderated rounds told us whether our fixes worked with no one there to help.</p>
+      </div>
+
+      <div class="block">
+        <ol class="sc-steps">
+          <li class="card sc-step">
+            <p class="sc-step__when">Sep</p>
+            <h3 class="sc-step__title">Heuristic evaluation</h3>
+            <p class="sc-step__who">Real app</p>
+            <p class="sc-step__text">We reviewed the real app against usability heuristics: no skip buttons on the full player, two unskippable ads before the first song, artist links hidden behind “Show more.”</p>
+          </li>
+          <li class="card sc-step">
+            <p class="sc-step__when">Oct 9–17</p>
+            <h3 class="sc-step__title">Moderated usability tests</h3>
+            <p class="sc-step__who">5 Spotify users · real app</p>
+            <p class="sc-step__text">We watched people skip, save, find their saved music and get past an ad, and asked them why they did what they did.</p>
+          </li>
+          <li class="card sc-step">
+            <p class="sc-step__when">Nov 3</p>
+            <h3 class="sc-step__title">Unmoderated test, Round 1</h3>
+            <p class="sc-step__who">5 users · our prototype</p>
+            <p class="sc-step__text">Our first redesign, tested on UserTesting with no moderator, to see if the fixes worked without help.</p>
+          </li>
+          <li class="card sc-step">
+            <p class="sc-step__when">Nov 10–11</p>
+            <h3 class="sc-step__title">Unmoderated test, Round 2</h3>
+            <p class="sc-step__who">4 users · revised prototype</p>
+            <p class="sc-step__text">The same tasks and success criteria as Round 1, so we could tell whether our changes made things better.</p>
+          </li>
+        </ol>
+        <p class="body" style="margin-top:var(--space-m)">Everyone we tested is a regular Spotify user who had used SoundCloud little or never. We recruited the moderated participants on YikYak and Instagram and screened the unmoderated ones on UserTesting. No task used the words skip, save, like or back, so we could see where people looked on their own.</p>
+      </div>
+
+      <div class="block">
+        <article class="card">
+          <header class="insight__head">
+            <h3 class="t3">How we found the patterns</h3>
+            <p class="method__kicker">Rainbow sheet</p>
+          </header>
+          <p class="body">After the moderated sessions we logged what we saw in a rainbow sheet. Each row is something we observed and each color is one person. Rows with 4 or more people became findings.</p>
+          <div class="sc-rainbow-wrap">
+            <table class="sc-rainbow">
+              <caption class="sr-only">What each of the five moderated participants did. A colored cell means that participant did it.</caption>
+              <thead>
+                <tr><th scope="col"><span class="sr-only">Observation</span></th><th scope="col">P1</th><th scope="col">P2</th><th scope="col">P3</th><th scope="col">P4</th><th scope="col">P5</th><th scope="col"><span class="sr-only">Count</span></th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Looked for controls at the bottom</th><td class="sc-cell p1"><span class="sr-only">Yes</span></td><td class="sc-cell p2"><span class="sr-only">Yes</span></td><td class="sc-cell p3"><span class="sr-only">Yes</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-count">4/5</td></tr>
+                <tr><th scope="row">Said the controls felt unfamiliar</th><td class="sc-cell p1"><span class="sr-only">Yes</span></td><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-cell p3"><span class="sr-only">Yes</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell p5"><span class="sr-only">Yes</span></td><td class="sc-count">4/5</td></tr>
+                <tr><th scope="row">Weren’t confident saving the song</th><td class="sc-cell p1"><span class="sr-only">Yes</span></td><td class="sc-cell p2"><span class="sr-only">Yes</span></td><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell p5"><span class="sr-only">Yes</span></td><td class="sc-count">4/5</td></tr>
+                <tr><th scope="row">Found their saved playlist without help</th><td class="sc-cell p1"><span class="sr-only">Yes</span></td><td class="sc-cell p2"><span class="sr-only">Yes</span></td><td class="sc-cell p3"><span class="sr-only">Yes</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell p5"><span class="sr-only">Yes</span></td><td class="sc-count">5/5</td></tr>
+                <tr><th scope="row">Went straight to Library for the saved song</th><td class="sc-cell p1"><span class="sr-only">Yes</span></td><td class="sc-cell p2"><span class="sr-only">Yes</span></td><td class="sc-cell p3"><span class="sr-only">Yes</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell p5"><span class="sr-only">Yes</span></td><td class="sc-count">5/5</td></tr>
+                <tr><th scope="row">Had to stop and wait out an ad</th><td class="sc-cell p1"><span class="sr-only">Yes</span></td><td class="sc-cell p2"><span class="sr-only">Yes</span></td><td class="sc-cell p3"><span class="sr-only">Yes</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell p5"><span class="sr-only">Yes</span></td><td class="sc-count">5/5</td></tr>
+                <tr class="sc-quiet"><th scope="row">Said Home felt busy</th><td class="sc-cell p1"><span class="sr-only">Yes</span></td><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell p5"><span class="sr-only">Yes</span></td><td class="sc-count">3/5</td></tr>
+                <tr class="sc-quiet"><th scope="row">Couldn’t find skip on the first try</th><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-cell p3"><span class="sr-only">Yes</span></td><td class="sc-cell p4"><span class="sr-only">Yes</span></td><td class="sc-cell"><span class="sr-only">No</span></td><td class="sc-count">2/5</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="caption">Finding saved music was easy for everyone, so the one part of our hypothesis that didn’t hold was the Library.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================ FINDINGS -->
+    <section id="findings" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Key Findings</p>
+        <h2 class="t2">Four habits SoundCloud breaks</h2>
+        <p class="body">Each finding puts the SoundCloud app next to our redesign, with the part that matters ringed in orange and shown up close. Tap a screen to see it full size.</p>
+      </div>
+
+      <!-- Finding 1: skip -->
+      <div class="block">
+        <article class="sc-find" aria-labelledby="f1">
+          <p class="sc-finding__num">Finding 01</p>
+          <h3 class="t3" id="f1">Skip isn’t where Spotify users look for it</h3>
+          <div class="scx-stage">
+            <figure class="scx-ph"><span class="scx-tag">SoundCloud app</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/real-player.jpg" data-alt="The SoundCloud app player: song title, cover art and waveform, with no skip or pause buttons." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/real-player.jpg" alt="The SoundCloud app player: song title, cover art and waveform, with no skip or pause buttons." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill" style="--x:0.03;--y:0.732;--w:0.94;--h:0.036" aria-hidden="true"></span></button><figcaption class="scx-label">No skip buttons</figcaption></figure>
+            <figure class="scx-ph scx-ph--good scx-ph--lens" style="--mw:100"><span class="scx-tag">Our redesign</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/player.jpg" data-alt="Our redesigned player: back, pause and next buttons under the waveform, and one Save button at the top." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/player.jpg" alt="Our redesigned player: back, pause and next buttons under the waveform, and one Save button at the top." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill scx-ring--good" style="--x:0.16;--y:0.724;--w:0.68;--h:0.094" aria-hidden="true"></span><span class="scx-lens" style="--cx:0.5;--cy:0.771;--z:1.35;--mh:38;--my:0.771" aria-hidden="true"><img src="../assets/img/soundcloud/screens/player.jpg" alt="" loading="lazy" decoding="async"></span></button><figcaption class="scx-label">Back, pause and next row</figcaption></figure>
+          </div>
+          <div class="sc-find__pair">
+            <div class="sc-find__card">
+              <p class="sc-find__label">Before · SoundCloud app</p>
+              <p class="sc-find__text">No skip buttons on the full player. You tap the cover art or swipe.</p>
+              <p class="sc-find__stat"><b>4 of 5</b>looked at the bottom for skip</p>
+              <figure class="quote sc-find__quote"><blockquote>“I expected it to be more so towards the bottom.”</blockquote><figcaption>P3, moderated session</figcaption></figure>
+            </div>
+            <div class="sc-find__card sc-find__card--after">
+              <p class="sc-find__label">After · Our redesign</p>
+              <p class="sc-find__text">A back, pause and next row, right where Spotify users already look.</p>
+              <p class="sc-find__stat"><b>3/5 → 5/5 → 4/4</b>changed songs on their own: real app, Round 1, Round 2</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Finding 2: save -->
+      <div class="block">
+        <article class="sc-find" aria-labelledby="f2">
+          <p class="sc-finding__num">Finding 02</p>
+          <h3 class="t3" id="f2">The heart saves, but it looks like a like</h3>
+          <div class="scx-stage scx-stage--3">
+            <figure class="scx-ph"><span class="scx-tag">SoundCloud app</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/real-player.jpg" data-alt="The SoundCloud app player after tapping the heart: the heart in the bottom bar and a small Saved to Library pop-up above it." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/real-player.jpg" alt="The SoundCloud app player after tapping the heart: the heart in the bottom bar and a small Saved to Library pop-up above it." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill" style="--x:0.334;--y:0.832;--w:0.333;--h:0.057" aria-hidden="true"></span><span class="scx-ring scx-ring--pill" style="--x:0.078;--y:0.899;--w:0.192;--h:0.044" aria-hidden="true"></span></button><figcaption class="scx-label">Heart + quick pop‑up</figcaption></figure>
+            <figure class="scx-ph"><span class="scx-tag">Round 1</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/round1-heart-and-save.jpg" data-alt="Round 1 prototype: a Saved button at the top and the heart still in the bottom bar." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/round1-heart-and-save.jpg" alt="Round 1 prototype: a Saved button at the top and the heart still in the bottom bar." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill" style="--x:0.042;--y:0.186;--w:0.272;--h:0.054" aria-hidden="true"></span><span class="scx-ring scx-ring--pill" style="--x:0.062;--y:0.92;--w:0.204;--h:0.041" aria-hidden="true"></span></button><figcaption class="scx-label">Save added, heart kept</figcaption></figure>
+            <figure class="scx-ph scx-ph--good scx-ph--lens" style="--mw:62"><span class="scx-tag">Round 2</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/player.jpg" data-alt="Round 2 prototype: one Save button at the top and no heart in the bottom bar." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/player.jpg" alt="Round 2 prototype: one Save button at the top and no heart in the bottom bar." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill scx-ring--good" style="--x:0.043;--y:0.186;--w:0.248;--h:0.055" aria-hidden="true"></span><span class="scx-lens scx-lens--round" style="--cx:0.167;--cy:0.2135;--z:2.4;--mh:62;--my:0.2135" aria-hidden="true"><img src="../assets/img/soundcloud/screens/player.jpg" alt="" loading="lazy" decoding="async"></span></button><figcaption class="scx-label">One Save button</figcaption></figure>
+          </div>
+          <div class="sc-find__pair">
+            <div class="sc-find__card">
+              <p class="sc-find__label">Before · SoundCloud app</p>
+              <p class="sc-find__text">The heart does save, but the only sign is a pop-up that’s gone in about a second.</p>
+              <p class="sc-find__stat"><b>4 of 5</b>weren’t sure it saved</p>
+              <figure class="quote sc-find__quote"><blockquote>“I didn’t know that necessarily saved anything.”</blockquote><figcaption>P4, moderated session</figcaption></figure>
+            </div>
+            <div class="sc-find__card sc-find__card--after">
+              <p class="sc-find__label">After · Our redesign, twice</p>
+              <p class="sc-find__text">Round 1 added a Save button but kept the heart. Round 2 took the heart out.</p>
+              <p class="sc-find__stat"><b>3 of 5 → 0 of 4</b>confused about saving, Round 1 → Round 2. All 4 found their song the next day.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Finding 3: ads -->
+      <div class="block">
+        <article class="sc-find" aria-labelledby="f3">
+          <p class="sc-finding__num">Finding 03</p>
+          <h3 class="t3" id="f3">An ad freezes the whole app</h3>
+          <div class="scx-stage">
+            <figure class="scx-ph"><span class="scx-tag">SoundCloud app</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/real-ad.jpg" data-alt="The SoundCloud app during an ad: the ad fills the screen, with a countdown and the song that plays after it at the bottom." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/real-ad.jpg" alt="The SoundCloud app during an ad: the ad fills the screen, with a countdown and the song that plays after it at the bottom." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill" style="--x:0.853;--y:0.889;--w:0.119;--h:0.057" aria-hidden="true"></span></button><figcaption class="scx-label">Wait out the countdown</figcaption></figure>
+            <figure class="scx-ph scx-ph--good scx-ph--lens" style="--mw:104"><span class="scx-tag">Our redesign</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/ad-mini-player.jpg" data-alt="Our redesign: the Home screen stays usable while an ad plays in the mini player, which says what is playing next." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/ad-mini-player.jpg" alt="Our redesign: the Home screen stays usable while an ad plays in the mini player, which says what is playing next." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill scx-ring--good" style="--x:0.016;--y:0.808;--w:0.968;--h:0.089" aria-hidden="true"></span><span class="scx-lens" style="--cx:0.35;--cy:0.8525;--z:1.4;--mh:40;--my:0.8525" aria-hidden="true"><img src="../assets/img/soundcloud/screens/ad-mini-player.jpg" alt="" loading="lazy" decoding="async"></span></button><figcaption class="scx-label">The ad moves to the mini player</figcaption></figure>
+          </div>
+          <div class="sc-find__pair">
+            <div class="sc-find__card">
+              <p class="sc-find__label">Before · SoundCloud app</p>
+              <p class="sc-find__text">On the free tier, nothing else works until the ad ends.</p>
+              <p class="sc-find__stat"><b>5 of 5</b>had to sit and wait it out</p>
+              <figure class="quote sc-find__quote"><blockquote>“I just want to listen to my music without getting interrupted.”</blockquote><figcaption>P5, moderated session</figcaption></figure>
+            </div>
+            <div class="sc-find__card sc-find__card--after">
+              <p class="sc-find__label">After · Our redesign</p>
+              <p class="sc-find__text">The ad plays in the mini player, so you can keep browsing.</p>
+              <p class="sc-find__stat"><b>0 of 4</b>got stuck in Round 2</p>
+              <p class="sc-find__open">Still open: only 2 of 4 knew which song would play after the ad.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Finding 4: artist -->
+      <div class="block">
+        <article class="sc-find" aria-labelledby="f4">
+          <p class="sc-finding__num">Finding 04</p>
+          <h3 class="t3" id="f4">Artist pages are hard to reach</h3>
+          <p class="sc-find__lead">On the real app, an artist’s links hide behind “Show more.” Our heuristic review caught it, so we tested our fix in the unmoderated rounds.</p>
+          <div class="scx-stage">
+            <figure class="scx-ph scx-ph--lens-left" style="--mw:70"><span class="scx-tag">Round 2 player</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/player.jpg" data-alt="Our Round 2 player: the artist’s name, Kairo, sits under the song title as plain text." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/player.jpg" alt="Our Round 2 player: the artist’s name, Kairo, sits under the song title as plain text." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--pill" style="--x:0.043;--y:0.124;--w:0.121;--h:0.025" aria-hidden="true"></span><span class="scx-lens scx-lens--left scx-lens--bad" style="--cx:0.18;--cy:0.123;--z:2.2;--mh:32;--my:0.1365" aria-hidden="true"><img src="../assets/img/soundcloud/screens/player.jpg" alt="" loading="lazy" decoding="async"></span></button><figcaption class="scx-label">Name looks like plain text</figcaption></figure>
+            <figure class="scx-ph scx-ph--good"><span class="scx-tag">Our artist page</span><button class="scx-frame" type="button" data-full="../assets/img/soundcloud/screens/artist.jpg" data-alt="Our artist page for Kairo: profile, Follow button, an About section with hometown and bio, and links to Instagram, TikTok and YouTube." aria-label="View this screen full size"><img src="../assets/img/soundcloud/screens/artist.jpg" alt="Our artist page for Kairo: profile, Follow button, an About section with hometown and bio, and links to Instagram, TikTok and YouTube." width="804" height="1740" loading="lazy" decoding="async"><span class="scx-ring scx-ring--good" style="--x:0.025;--y:0.514;--w:0.96;--h:0.25" aria-hidden="true"></span></button><figcaption class="scx-label">About section with links</figcaption></figure>
+          </div>
+          <div class="sc-find__pair">
+            <div class="sc-find__card sc-find__card--after">
+              <p class="sc-find__label">Round 1 · About section</p>
+              <p class="sc-find__text">An About section with hometown, bio and links. Everyone who reached it found what they needed.</p>
+              <div class="sc-find__dots"><span class="sc-find__round">Round 1</span><span class="sc-dots" role="img" aria-label="Round 1: 3 of 5 went straight to the artist page"><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i></span><b>3 of 5</b></div>
+              <p class="sc-find__dots-note">went straight to the artist page</p>
+            </div>
+            <div class="sc-find__card">
+              <p class="sc-find__label">Round 2 · Getting there</p>
+              <p class="sc-find__text">The artist name on the player still looked like plain text, so most people looked somewhere else first.</p>
+              <div class="sc-find__dots"><span class="sc-find__round">Round 2</span><span class="sc-dots" role="img" aria-label="Round 2: 1 of 4 went straight to the artist page"><i></i><i></i><i class="on"></i><i></i></span><b>1 of 4</b></div>
+              <p class="sc-find__dots-note">went straight to the artist page</p>
+              <figure class="quote sc-find__quote"><blockquote>“It doesn’t look like… a pushable link.”</blockquote><figcaption>Round 2 tester, on the artist’s name</figcaption></figure>
+              <p class="sc-find__open">Next: make the artist name look tappable.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================================================== RECOMMENDATIONS -->
+    <section id="recommendations" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Recommendations</p>
+        <h2 class="t2">What we asked SoundCloud to build</h2>
+        <p class="body">We ranked each fix by how often people hit the problem and how sure we were that the fix worked.</p>
+      </div>
+
+      <div class="block">
+        <div class="sc-trio">
+          <article class="card sc-ask sc-ask--now">
+            <p class="sc-label">Now</p>
+            <h3 class="t3">Back, pause and next, plus one Save button</h3>
+            <p class="body">Both worked in both rounds, they’re cheap to build, and people use them on almost every song.</p>
+          </article>
+          <article class="card sc-ask">
+            <p class="sc-label">Next</p>
+            <h3 class="t3">Finish “Play after ad” and make the artist name tappable</h3>
+            <p class="body">Then test both again with new Spotify users, using the same tasks so the results compare.</p>
+          </article>
+          <article class="card sc-ask">
+            <p class="sc-label">Later</p>
+            <h3 class="t3">Retest everything with a bigger group</h3>
+            <p class="body">Our rounds were small, with 5, 5 and 4 people. The patterns repeated, but the numbers need a bigger sample.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">The redesign we tested</h3>
+        <p class="body">Round 2 of the prototype I coded. It streams real songs through SoundCloud’s official embeddable player, so testers heard real music while they tried it.</p>
+        <ol class="flow card" aria-label="Final prototype screens">
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/soundcloud/screens/player.jpg" data-alt="Full player: Night Drive by Kairo, with one Save button, a waveform, and back, pause and next buttons." aria-label="View the full player full size"><img class="shot" src="../assets/img/soundcloud/screens/player.jpg" alt="" width="804" height="1740" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">01</span>Player</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/soundcloud/screens/saved-songs.jpg" data-alt="Saved songs in Library, with Night Drive saved." aria-label="View Saved songs full size"><img class="shot" src="../assets/img/soundcloud/screens/saved-songs.jpg" alt="" width="804" height="1740" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">02</span>Saved songs</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/soundcloud/screens/ad-mini-player.jpg" data-alt="Home with an ad playing in the mini player, showing what plays next." aria-label="View the ad in the mini player full size"><img class="shot" src="../assets/img/soundcloud/screens/ad-mini-player.jpg" alt="" width="804" height="1740" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">03</span>Ad in the mini player</p>
+          </li>
+          <li>
+            <button class="flow__open" type="button" data-full="../assets/img/soundcloud/screens/artist.jpg" data-alt="Artist page for Kairo with an About section and social links." aria-label="View the artist page full size"><img class="shot" src="../assets/img/soundcloud/screens/artist.jpg" alt="" width="804" height="1740" loading="lazy"></button>
+            <p class="flow__cap"><span class="flow__n">04</span>Artist page</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============================================================== IMPACT -->
+    <section id="impact" class="section">
+      <div class="section-head">
+        <p class="eyebrow">Impact</p>
+        <h2 class="t2">Same tasks, far fewer people stuck</h2>
+        <p class="body">The real app compared with our final redesign. These are small groups, so we treat them as strong signals, not final proof.</p>
+      </div>
+
+      <div class="block">
+        <div class="rounds">
+          <div class="delta">
+            <p class="delta__cap delta__lead">Couldn’t change songs on their own</p>
+            <p class="delta__side"><span class="delta__num delta__num--before">2 of 5</span><span class="delta__cap">real app</span></p>
+            <span class="delta__arrow" aria-hidden="true">&rarr;</span>
+            <p class="delta__side"><span class="delta__num delta__num--after">0 of 4</span><span class="delta__cap">our redesign</span></p>
+          </div>
+          <div class="delta">
+            <p class="delta__cap delta__lead">Weren’t sure their song had saved</p>
+            <p class="delta__side"><span class="delta__num delta__num--before">4 of 5</span><span class="delta__cap">real app</span></p>
+            <span class="delta__arrow" aria-hidden="true">&rarr;</span>
+            <p class="delta__side"><span class="delta__num delta__num--after">0 of 4</span><span class="delta__cap">our redesign</span></p>
+          </div>
+          <div class="delta">
+            <p class="delta__cap delta__lead">Got stuck waiting out an ad</p>
+            <p class="delta__side"><span class="delta__num delta__num--before">5 of 5</span><span class="delta__cap">real app</span></p>
+            <span class="delta__arrow" aria-hidden="true">&rarr;</span>
+            <p class="delta__side"><span class="delta__num delta__num--after">0 of 4</span><span class="delta__cap">our redesign</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">Why it matters</h3>
+        <div class="sc-trio" style="margin-top:var(--space-m)">
+          <article class="card">
+            <p class="sc-label">For users</p>
+            <p class="body">Skip and save happen on almost every song. When they work the way Spotify users expect, the first session stops feeling like a test.</p>
+          </article>
+          <article class="card">
+            <p class="sc-label">For the product</p>
+            <p class="body">A saved song is a reason to open the app again tomorrow, and an ad that doesn’t freeze the app makes the free tier feel less broken.</p>
+          </article>
+          <article class="card">
+            <p class="sc-label">For SoundCloud vs. Spotify</p>
+            <p class="body">Spotify users leave in their first few minutes when the basics break. These fixes keep them long enough to find the artists and songs they can’t get on Spotify.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3 class="t3">What my part made possible</h3>
+        <p class="body">Because the prototype was code, I could rebuild it in the week between rounds: remove the heart, make songs tapped during an ad play next, and fix the bugs Round 1 found. That’s why Round 2 could test a real answer to Round 1 instead of the same design again.</p>
+      </div>
+    </section>
+
+    <!-- ========================================================== REFLECTION -->
+    <!-- DRAFT: J to review. Drafted from the Round 1 notes (no audio for 3 testers), the switch question and the team's limits slide. -->
+    <section id="reflection" class="section">
+      <div class="section-head">
+        <h2 class="t2">Reflection</h2>
+        <p class="body">Easy wasn’t enough. By Round 2, all 4 testers called our redesign easy, but their interest in switching from Spotify averaged 5 on a scale of 1 to 11, mostly because of price and their music library. Fixing the habits keeps people in the app. It doesn’t win the switch on its own, and that’s worth knowing before anyone builds more.</p>
+        <p class="body">What I’d do differently: run bigger rounds, test each round the same way, and pilot the prototype’s audio before testing. In Round 1, songs didn’t play for 3 of 5 testers because of an audio problem in the prototype, not the design. I fixed it before Round 2, but we lost some of what those sessions could have told us.</p>
+        <p class="body">The biggest lesson for me: a fix isn’t done until people can use it without help. The Save button only worked once we took the heart away.</p>
+      </div>
+    </section>
+    <!-- /DRAFT -->
+
+  </main>
+</div>
+
+<dialog class="lightbox" aria-label="Full-size image">
+  <button class="lightbox__close" type="button">Close</button>
+  <div class="lightbox__stage"><img alt=""></div>
+</dialog>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div>
+      <p class="site-footer__display">THANKS FOR VISITING</p>
+      <p class="site-footer__sub">Let's keep in touch!</p>
+    </div>
+    <div class="site-footer__cols">
+      <div>
+        <h2>Connect</h2>
+        <ul>
+          <li><a href="mailto:jamyanart@gmail.com">Email</a></li>
+          <li><a href="https://www.linkedin.com/in/jbatnyam" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href="../Jamiyan_Batnyam_Resume.pdf" target="_blank" rel="noopener">Resume</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>My Work</h2>
+        <ul>
+          <li><a href="soundcloud.html" aria-current="page">SoundCloud</a></li>
+          <li><a href="liminal.html">Liminal</a></li>
+          <li><a href="vibe-coding.html">Motorcycle Dashboard</a></li>
+          <li><a href="content-plus.html">ContentPlus</a></li>
+          <li><a href="finra-scadpro.html">FINRA x SCADpro</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <button class="footer-btn" type="button" id="copy-email" data-email="jamyanart@gmail.com" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span id="copy-email-label">Copy email</span>
+      </button>
+      <a class="footer-btn footer-btn--plain" href="#top">Back to top &uarr;</a>
+      <span class="footer-status" role="status" id="footer-status"></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var hasIO = "IntersectionObserver" in window;
+
+  /* ---------------------------------------------------------------- videos */
+  // HTML ships with controls (works without JS). With JS and motion allowed,
+  // recordings autoplay muted while on screen; with reduced motion they wait
+  // for the visitor to press play.
+  var vids = document.querySelectorAll("video[data-autoplay]");
+  function applyVideoMotion() {
+    Array.prototype.forEach.call(vids, function (v) {
+      v.controls = reduce.matches;
+      if (reduce.matches) v.pause();
+    });
+  }
+  applyVideoMotion();
+  if (reduce.addEventListener) reduce.addEventListener("change", applyVideoMotion);
+  if (hasIO) {
+    var vio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && !reduce.matches) {
+          var p = e.target.play();
+          if (p && p.catch) p.catch(function () { e.target.controls = true; });
+        } else {
+          e.target.pause();
+        }
+      });
+    }, { threshold: 0.25 });
+    Array.prototype.forEach.call(vids, function (v) { vio.observe(v); });
+  }
+
+
+  /* ---------------------------------------------------------- full-size viewer */
+  var box = document.querySelector(".lightbox");
+  if (box && typeof box.showModal === "function") {
+    var boxImg = box.querySelector("img");
+    var opener = null;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-full]"), function (btn) {
+      btn.addEventListener("click", function () {
+        opener = btn;
+        boxImg.src = btn.getAttribute("data-full");
+        boxImg.alt = btn.getAttribute("data-alt") || "";
+        boxImg.classList.toggle("is-shot", btn.classList.contains("flow__open"));
+        box.showModal();
+        box.querySelector(".lightbox__close").focus();
+      });
+    });
+    box.querySelector(".lightbox__close").addEventListener("click", function () { box.close(); });
+    box.addEventListener("click", function (e) { if (e.target !== boxImg) box.close(); });
+    box.addEventListener("close", function () {
+      boxImg.removeAttribute("src");
+      if (opener) opener.focus();
+    });
+  } else {
+    // No <dialog> support: open the image in a new tab instead.
+    Array.prototype.forEach.call(document.querySelectorAll("[data-full]"), function (btn) {
+      btn.addEventListener("click", function () { window.open(btn.getAttribute("data-full"), "_blank", "noopener"); });
+    });
+  }
+
+  /* ---------------------------------------------------------- rail scrollspy */
+  var links = Array.prototype.slice.call(document.querySelectorAll(".rail a"));
+  var targets = links.map(function (a) { return document.querySelector(a.getAttribute("href")); })
+                     .filter(Boolean);
+  function atBottom() {
+    return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+  }
+  function setActive(id) {
+    links.forEach(function (a) {
+      if (a.getAttribute("href") === "#" + id) a.setAttribute("aria-current", "true");
+      else a.removeAttribute("aria-current");
+    });
+  }
+  if (hasIO && targets.length) {
+    var sio = new IntersectionObserver(function (entries) {
+      var vis = entries.filter(function (e) { return e.isIntersecting; })
+                       .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+      if (atBottom()) setActive(targets[targets.length - 1].id);
+      else if (vis.length) setActive(vis[0].target.id);
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    targets.forEach(function (t) { sio.observe(t); });
+    setActive(targets[0].id);
+    // The last section is short and can't reach the trigger band; mark it at page bottom.
+    window.addEventListener("scroll", function () {
+      if (atBottom()) setActive(targets[targets.length - 1].id);
+    }, { passive: true });
+  }
+
+  /* Keep the active link in view when the rail is a horizontal strip (mobile). */
+  var railNav = document.querySelector(".rail__nav");
+  if (railNav) {
+    var centreActive = function () {
+      if (railNav.scrollWidth <= railNav.clientWidth) return;
+      var cur = railNav.querySelector("[aria-current]");
+      if (!cur) return;
+      var navBox = railNav.getBoundingClientRect(), curBox = cur.getBoundingClientRect();
+      railNav.scrollTo({
+        left: railNav.scrollLeft + (curBox.left - navBox.left) - navBox.width / 2 + curBox.width / 2,
+        behavior: "auto"
+      });
+    };
+    var mo = new MutationObserver(centreActive);
+    links.forEach(function (a) { mo.observe(a, { attributes: true, attributeFilter: ["aria-current"] }); });
+  }
+
+  /* ------------------------------------------------- reading progress + time */
+  (function () {
+    var wrap = document.getElementById("rail-progress");
+    var bar  = document.getElementById("rail-bar");
+    var meta = document.getElementById("rail-meta");
+    var body = document.getElementById("main");
+    if (!wrap || !bar || !meta || !body) return;
+    var fill = bar.firstElementChild;
+    if (!fill) return;
+    /* Only show the indicator once it can actually track scrolling. */
+    wrap.hidden = false;
+
+    /* Reading time is measured from this page's own words - never hardcoded.
+       200 wpm is the common estimate for online prose. */
+    var WPM = 200;
+    var words = body.textContent.trim().split(/\s+/).filter(Boolean).length;
+    var totalMin = Math.max(1, Math.round(words / WPM));
+    meta.textContent = "0% \u00B7 " + totalMin + " min read";
+    bar.setAttribute("aria-valuetext", "0 percent read, " + totalMin + " minutes left");
+
+    var frame = 0;
+    function update() {
+      frame = 0;
+      var scrollable = body.offsetHeight - window.innerHeight;
+      var pct = scrollable > 0 ? -body.getBoundingClientRect().top / scrollable : 1;
+      if (atBottom()) pct = 1;
+      pct = Math.max(0, Math.min(1, pct));
+
+      var whole = Math.round(pct * 100);
+      var left = Math.max(0, Math.round(totalMin * (1 - pct)));
+      fill.style.transform = "scaleX(" + pct.toFixed(4) + ")";
+      bar.setAttribute("aria-valuenow", String(whole));
+      bar.setAttribute("aria-valuetext", whole + " percent read, " + left + " minutes left");
+
+      var text = whole + "% \u00B7 " + (left > 0 ? left + " min left" : "finished");
+      if (meta.textContent !== text) meta.textContent = text;
+    }
+    function schedule() { if (!frame) frame = requestAnimationFrame(update); }
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    /* rAF is frozen in a background tab, so refresh directly when the page
+       is shown again or restored from the back/forward cache. */
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) update(); });
+    window.addEventListener("pageshow", update);
+    update();
+  })();
+})();
+</script>
+
+<script>
+/* ==========================================================================
+   Motion layer — see the CSS block of the same name.
+   Content is visible by default; this script only opts in to animation.
+   ========================================================================== */
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (reduce.matches || !("IntersectionObserver" in window)) return;
+
+  /* press ring on every button that has one */
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".evidence__open, .text-button");
+    if (!btn) return;
+    btn.classList.remove("is-hit");
+    void btn.offsetWidth;
+    btn.classList.add("is-hit");
+    btn.addEventListener("animationend", function h() {
+      btn.classList.remove("is-hit");
+      btn.removeEventListener("animationend", h);
+    });
+  });
+
+  /* the viewer animates out before it actually closes */
+  var box = document.querySelector(".lightbox");
+  if (box && typeof box.close === "function") {
+    var realClose = box.close.bind(box);
+    box.close = function () {
+      if (box.classList.contains("is-closing")) return realClose();
+      box.classList.add("is-closing");
+      window.setTimeout(function () {
+        box.classList.remove("is-closing");
+        realClose();
+      }, 140);
+    };
+  }
+
+  /* reveals, once each */
+  document.documentElement.classList.add("motion-ready");
+  var groups = [
+    { sel: ".mockups img", kind: "rise" },
+    { sel: ".stats__grid .stat", kind: "scale" },
+    { sel: ".finding", kind: "rise" },
+    { sel: ".results tbody tr", kind: "row" },
+    { sel: ".delta__side", kind: "rise" },
+    /* each flow steps in on its own count, so step 1 always leads */
+    { sel: ".flow > li", kind: "rise", local: true }
+  ];
+  var marked = [];
+  groups.forEach(function (g) {
+    var els = Array.prototype.slice.call(document.querySelectorAll(g.sel));
+    els.forEach(function (el, i) {
+      var n = g.local ? Array.prototype.indexOf.call(el.parentNode.children, el) : i;
+      el.setAttribute("data-reveal", g.kind);
+      el.style.setProperty("--i", g.stagger === false ? 0 : n % 8);
+      marked.push(el);
+    });
+  });
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      e.target.classList.add("is-in");
+      io.unobserve(e.target);
+    });
+  }, { rootMargin: "0px 0px -12% 0px", threshold: 0.15 });
+  marked.forEach(function (el) { io.observe(el); });
+
+  /* anything already on screen at load shows immediately */
+  window.requestAnimationFrame(function () {
+    marked.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) el.classList.add("is-in");
+    });
+  });
+
+  /* numbers count up to exactly the value already in the markup */
+  var counters = Array.prototype.slice.call(document.querySelectorAll(".stat__num, .round__pct, .delta__num"));
+  counters.forEach(function (el) {
+    var text = el.textContent.trim();
+    var m = text.match(/^(\d+)(.*)$/);
+    if (!m) return;
+    var target = parseInt(m[1], 10), suffix = m[2], dur = 900;
+    var cio = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      cio.disconnect();
+      var start = null;
+      requestAnimationFrame(function step(t) {
+        if (start === null) start = t;
+        var p = Math.min((t - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = text;          /* land on the exact original */
+      });
+    }, { threshold: 0.6 });
+    cio.observe(el);
+  });
+}());
+</script>
+
+<script>
+/* Footer utilities. The copy button is revealed only once this runs, so it is
+   never present as a dead control when JavaScript is off. */
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------- copy the email */
+  var copyBtn = document.getElementById("copy-email");
+  var label   = document.getElementById("copy-email-label");
+  var status  = document.getElementById("footer-status");
+  if (copyBtn && label && navigator.clipboard && navigator.clipboard.writeText) {
+    copyBtn.hidden = false;
+    var resetTimer = 0;
+    copyBtn.addEventListener("click", function () {
+      var email = copyBtn.getAttribute("data-email");
+      navigator.clipboard.writeText(email).then(function () {
+        label.textContent = "Copied";
+        if (status) status.textContent = "Email address copied.";
+      }, function () {
+        label.textContent = "Press Ctrl+C";
+        if (status) status.textContent = "Copy failed. The address is " + email;
+      });
+      window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(function () {
+        label.textContent = "Copy email";
+        if (status) status.textContent = "";
+      }, 2400);
+    });
+  }
+
+})();
+</script>
+<script>
+/* Wireframe strips: an endless loop. Each strip's screens are cloned once
+   (hidden from assistive tech), so half the track is one whole set. Runs
+   after the footer script, and follows its motion-off class from then on:
+   while motion is reduced the strips are plain scrollers again. */
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var SPEED = 40;   /* px per second, whatever the screen size */
+  var strips = Array.prototype.slice.call(document.querySelectorAll(".ticker--wireframes"));
+  if (!strips.length) return;
+
+  strips.forEach(function (strip) {
+    var track = strip.querySelector(".ticker__track");
+    Array.prototype.slice.call(track.children).forEach(function (li) {
+      var copy = li.cloneNode(true);
+      copy.setAttribute("aria-hidden", "true");
+      copy.setAttribute("data-clone", "");
+      track.appendChild(copy);
+    });
+  });
+
+  var sync = function () {
+    var loop = !root.classList.contains("motion-off");
+    strips.forEach(function (strip) {
+      var track = strip.querySelector(".ticker__track");
+      var view = strip.querySelector(".ticker__viewport");
+      var label = view.getAttribute("data-label") || view.getAttribute("aria-label");
+      view.setAttribute("data-label", label);
+      strip.classList.toggle("is-looping", loop);
+      if (loop) {
+        /* nothing to scroll by hand while it loops, so no tab stop */
+        view.removeAttribute("tabindex");
+        view.setAttribute("aria-label", label.replace(/, scrollable$/, ""));
+        track.style.animationDuration = (track.scrollWidth / 2 / SPEED).toFixed(1) + "s";
+      } else {
+        view.setAttribute("tabindex", "0");
+        view.setAttribute("aria-label", label);
+      }
+    });
+  };
+  new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["class"] });
+  var phone = window.matchMedia("(max-width: 760px)");
+  if (phone.addEventListener) phone.addEventListener("change", sync);
+  sync();
+}());
+</script>
+<script type="module" src="../assets/celestial.js"></script>
+</body>
+</html>

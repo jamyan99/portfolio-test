@@ -1,0 +1,145 @@
+/* The frozen lake's playground room (b-play.js): the south shore. The lake slides up until only
+   its bottom edge is left, as the dock; the room under it is either the 3D studio (the
+   playground) or the crawler's notes, never both. The pan, the shore's snow and the ice tiles are shared with the
+   other rooms (b-rooms.css). Everything the studio draws is named .pg-*, apart from the lake's
+   own .stage and .hero-copy, and lives inside .play-room. */
+.play-room__field {position:absolute;left:0;right:0;bottom:0;top:calc(var(--play-dock) - 56px);
+  transform:translateY(var(--play-pan));transition:transform var(--mo-travel) var(--mo-ease-move);
+  -webkit-mask-image:linear-gradient(transparent,#000 56px);mask-image:linear-gradient(transparent,#000 56px);}
+html[data-room="south"] .play-room__field {transform:none;}
+.play-scroll {position:absolute;inset:0;z-index:1;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;outline:none;
+  scrollbar-width:thin;scrollbar-color:rgba(210,235,255,.25) transparent;}
+/* One face at a time (b-play.js sets data-view from the address): the playground has no crawler
+   notes or crawler button, and the crawler's notes have no studio. */
+.play-room[data-view="studio"] :is(.play-article,.play-crawler) {display:none;}
+.play-room[data-view="notes"] .pg {display:none;}
+
+/* ---- The playground: the studio fills the room ---- */
+.pg {--mint:#9EF0D6;position:relative;height:100%;min-height:460px;outline:none;isolation:isolate;}
+.pg [hidden] {display:none !important;}
+/* (:where keeps these defaults weak, so each control's own rule below wins: the ball must keep
+   touch-action:none for its aim drag.) */
+:where(.pg) button {font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+:where(.pg) button svg {flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.pg :is(button,a):focus-visible {outline:2px solid #FFD7BF;outline-offset:3px;}
+.pg-stage {position:absolute;inset:0;overflow:hidden;}
+/* A pool of the lake's night behind the studio, so its walls and the character read against the
+   snow without a hard-edged panel. */
+.pg-stage::before {content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(64% 62% at 56% 56%,rgba(5,11,24,.72),rgba(5,11,24,.34) 58%,transparent 80%);}
+.pg-stage canvas {position:relative;display:block;width:100%;height:100%;outline:none;touch-action:pan-y;
+  opacity:0;transition:opacity var(--mo-slow) var(--mo-ease);}
+.pg-stage.ready canvas {opacity:1;}
+.pg-video {position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;object-position:72% 50%;}
+
+/* Heading and intro (the Playground page's own), over the top-left of the scene. */
+.pg-copy {position:absolute;z-index:2;left:clamp(20px,5vw,80px);top:calc(56px + clamp(16px,3.2vh,36px));max-width:min(36ch,38%);pointer-events:none;}
+.pg-copy::before {content:"";position:absolute;z-index:-1;inset:-28px -48px -32px -40px;pointer-events:none;
+  background:radial-gradient(ellipse at 34% 46%,rgba(8,14,26,.62),transparent 72%);}
+.pg-copy .work-eyebrow {margin:0 0 10px;}
+.pg-copy h2 {margin:0;color:var(--ink);font:500 clamp(30px,3.4vw,48px)/1.05 var(--display);letter-spacing:-.035em;}
+.pg-copy h2 em {font-style:normal;color:var(--mint);}
+.pg-intro {margin:12px 0 0;color:var(--muted);font:450 15px/1.6 var(--body);}
+
+/* Daylight (the lamp is the studio's own switch): the copy now sits on pale plaster, so it turns dark. */
+.pg[data-theme="light"] .pg-copy::before {background:radial-gradient(ellipse at 34% 46%,rgba(246,247,246,.78),transparent 72%);}
+.pg[data-theme="light"] .pg-copy h2 {color:#17263C;}
+.pg[data-theme="light"] .pg-copy h2 em {color:#1E6E63;}
+.pg[data-theme="light"] :is(.pg-intro,.pg-copy .work-eyebrow) {color:#3F5066;}
+
+/* What the scene is doing, top right; while it loads, in the middle. */
+.pg-status {position:absolute;z-index:3;right:clamp(20px,5vw,80px);top:calc(56px + clamp(16px,3.2vh,36px));max-width:calc(100% - 40px);padding:8px 14px;
+  border:1px solid var(--tile-line);border-radius:999px;background:rgba(8,14,26,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:var(--muted);font:600 11px/1.3 var(--body);letter-spacing:.04em;pointer-events:none;}
+.pg-stage:not(.ready) .pg-status {right:auto;left:50%;top:50%;transform:translate(-50%,-50%);}
+.pg.is-loading .pg-status {animation:pg-wait 1.4s var(--mo-ease) infinite alternate;}
+@keyframes pg-wait {from {opacity:.55;} to {opacity:1;}}
+.pg-play {position:absolute;z-index:4;left:50%;top:calc(50% + 48px);transform:translateX(-50%);display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:10px 22px;
+  border:1px solid #F3F2EE;border-radius:999px;background:#F3F2EE;color:#0B1220;font:650 13px/1 var(--body);}
+.pg-play span {font-size:11px;}
+
+/* Controls: the lake's own pills (like "Back to the lake"), low and centred. */
+.pg-controls {position:absolute;z-index:4;left:50%;bottom:clamp(18px,3.6vh,36px);transform:translateX(-50%);width:max-content;max-width:calc(100% - 28px);}
+.pg-moves,.pg-court {display:flex;align-items:center;justify-content:center;gap:8px;}
+.pg-moves button {display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:84px;min-height:44px;padding:10px 18px;
+  border:1px solid rgba(225,242,255,.32);border-radius:999px;background:rgba(8,14,26,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:var(--ink);font:650 12.5px/1 var(--body);white-space:nowrap;
+  transition:border-color var(--mo-fast) var(--mo-ease),background-color var(--mo-fast) var(--mo-ease),color var(--mo-fast) var(--mo-ease),scale var(--mo-fast) var(--mo-ease);}
+.pg-moves .pg-primary {background:#F3F2EE;border-color:#F3F2EE;color:#0B1220;}
+.pg-moves .pg-icon {min-width:44px;width:44px;padding:0;}
+.pg-moves button:disabled {opacity:.45;cursor:default;}
+.pg-moves button[data-action][aria-pressed="true"] {border-color:var(--mint);color:var(--mint);background:rgba(8,14,26,.72);}
+.pg-moves button.queued {box-shadow:inset 0 0 0 2px var(--warm);}
+.pg-moves .pg-icon[aria-pressed="true"] {border-color:var(--warm);color:var(--warm);}
+.pg-court:not([hidden]) {animation:pg-arrive var(--mo-mid) var(--mo-ease) both;}
+@keyframes pg-arrive {from {opacity:0;translate:0 6px;} to {opacity:1;translate:0 0;}}
+.pg-hint {margin:10px 0 0;color:var(--muted);font:500 11.5px/1.5 var(--body);letter-spacing:.02em;text-align:center;text-shadow:0 1px 8px rgba(3,7,14,.9);}
+
+/* Things in the scene you can press: the character, the ball (drag to aim), the laptop, the lamp. */
+.pg-hit {position:absolute;z-index:3;min-width:44px;min-height:44px;padding:0;border:0;border-radius:45%;background:transparent;color:var(--ink);transform:translate(-50%,-50%);}
+.pg-hit--ball {z-index:5;width:44px;height:44px;border-radius:50%;touch-action:none;cursor:grab;}
+.pg-hit--ball:active {cursor:grabbing;}
+.pg-hit--laptop {z-index:4;width:56px;height:44px;border-radius:6px;}
+.pg-lamp {z-index:4;width:44px;height:44px;display:grid;place-items:center;border:1px solid rgba(225,242,255,.32);border-radius:50%;
+  background:rgba(8,14,26,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#FFD7BF;transition:border-color var(--mo-fast) var(--mo-ease);}
+.pg-aim {position:absolute;z-index:4;left:0;top:0;width:2px;background:var(--mint);transform-origin:top;pointer-events:none;}
+.pg-aim i {position:absolute;left:-4px;bottom:-5px;width:10px;height:10px;border:2px solid var(--mint);border-radius:50%;}
+
+/* The direction pad, for touch and for anyone who would rather press than type. */
+.pg-pad {position:absolute;z-index:6;right:clamp(16px,5vw,80px);bottom:clamp(18px,3.6vh,36px);display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:4px;
+  touch-action:none;user-select:none;-webkit-user-select:none;}
+.pg-pad button {display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid rgba(225,242,255,.32);border-radius:14px;
+  background:rgba(8,14,26,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--ink);touch-action:none;
+  transition:border-color var(--mo-fast) var(--mo-ease),background-color var(--mo-fast) var(--mo-ease),scale var(--mo-fast) var(--mo-ease);}
+.pg-pad [data-move="ArrowUp"] {grid-column:2;grid-row:1;}
+.pg-pad [data-move="ArrowLeft"] {grid-column:1;grid-row:2;}
+.pg-pad [data-move="ArrowDown"] {grid-column:2;grid-row:2;}
+.pg-pad [data-move="ArrowRight"] {grid-column:3;grid-row:2;}
+.pg-pad button[aria-pressed="true"] {background:#F3F2EE;border-color:#F3F2EE;color:#0B1220;scale:.95;}
+.pg-pad button:disabled {opacity:.45;cursor:default;}
+@media (hover:hover) {
+  :is(.pg-moves,.pg-pad) button:not(:disabled):hover,.pg-lamp:hover {border-color:rgba(255,179,143,.7);}
+  .pg-hit--character:hover {box-shadow:0 0 0 1px rgba(158,240,214,.35);}
+}
+:is(.pg-moves,.pg-pad) button:not(:disabled):active,.pg-play:active,.pg-lamp:active {scale:.98;}
+
+/* ---- The crawler: its notes fill the room ---- */
+.play-article {box-sizing:border-box;max-width:calc(980px + 2 * clamp(20px,5vw,80px));min-height:100%;margin:0 auto;padding:72px clamp(20px,5vw,80px) 96px;}
+/* J's text to come: the site's TODO boxes, sized like the text they'll become so the crawler has
+   real lines to walk on. */
+.play-room .play-todo {display:block;margin:16px 0 0;padding:14px 18px;border-radius:14px;font:500 16px/1.75 var(--body);
+  background:rgba(12,24,42,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.play-room h2.play-todo {margin-top:10px;font:500 clamp(30px,3.4vw,48px)/1.1 var(--display);letter-spacing:-.035em;outline:none;}
+.play-room h3.play-todo {margin-top:0;padding:8px 14px;font:600 15px/1.4 var(--body);}
+.play-cols {display:grid;grid-template-columns:1fr 1fr;gap:36px 40px;margin-top:48px;}
+.play-cols section > .play-todo + .play-todo {margin-top:12px;}
+
+/* The dock, over the strip of lake left at the top. */
+.play-dock {position:absolute;left:0;right:0;top:0;height:var(--play-dock);display:flex;align-items:center;gap:14px;padding:0 clamp(24px,5vw,80px) 16px;
+  background:linear-gradient(180deg,rgba(3,7,14,.6),rgba(3,7,14,.2) 70%,transparent);opacity:0;transform:translateY(-8px);transition:opacity var(--mo-mid) var(--mo-ease),transform var(--mo-mid) var(--mo-ease);}
+html[data-room="south"] .play-dock {opacity:1;transform:none;transition-delay:calc(var(--mo-travel) * .6);}
+.play-crawler {margin-left:auto;}
+
+@media (max-width:760px) {
+  .pg-copy {left:20px;top:calc(56px + 12px);max-width:62%;}
+  .pg-copy h2 {font-size:28px;}
+  .pg-intro {display:none;}
+  .pg-status {right:16px;top:calc(56px + 12px);max-width:34%;padding:6px 10px;font-size:10px;text-align:center;}
+  .pg-controls {bottom:16px;}
+  .pg-moves,.pg-court {gap:5px;}
+  .pg-moves button {min-width:70px;padding:10px 12px;font-size:11.5px;}
+  .pg-moves .pg-icon {min-width:44px;}
+  .pg-hint {max-width:320px;margin-inline:auto;font-size:10.5px;}
+  .pg-pad {right:16px;bottom:118px;}
+  .play-article {padding:48px 20px 72px;}
+  .play-cols {grid-template-columns:1fr;gap:28px;}
+  .play-dock {padding:0 16px 8px;gap:8px;}
+  .play-dock .room-back {padding:8px 14px 8px 12px;font-size:11px;}
+}
+@media (max-width:380px) {
+  .pg-moves,.pg-court {gap:4px;}
+  .pg-moves button {min-width:62px;padding:10px 8px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .pg.is-loading .pg-status,.pg-court:not([hidden]) {animation:none;}
+}

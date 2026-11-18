@@ -1,0 +1,135 @@
+{
+  "coordinateSystem": "glTF +Y up; metres; +Z faces laptop from chair",
+  "desk": {
+    "top": [
+      -2,
+      0.75,
+      0.8
+    ],
+    "topY": 0.7775,
+    "width": 1.95,
+    "depth": 0.86
+  },
+  "chair": {
+    "seat": [
+      -2,
+      0.49,
+      0
+    ],
+    "seatTopY": 0.5425
+  },
+  "laptop": {
+    "screenMesh": "LaptopScreen",
+    "screenCenter": [
+      -2.0,
+      0.9535542726516724,
+      0.9564626812934875
+    ],
+    "screenNormal": [
+      0.0,
+      0.20845989882946014,
+      -0.9780309200286865
+    ],
+    "uvOrigin": "bottom-left"
+  },
+  "lamp": {
+    "root": "DeskLamp",
+    "clickMeshesPrefix": "Lamp",
+    "center": [
+      -2.58,
+      1.06,
+      0.98
+    ]
+  },
+  "hoop": {
+    "rimMesh": "HoopRim",
+    "center": [
+      2.7,
+      3.05,
+      -2.4
+    ],
+    "rimRadius": 0.225,
+    "tubeRadius": 0.011,
+    "netBottomY": 2.635,
+    "boardCenter": [
+      2.7,
+      3.5,
+      -2.65
+    ],
+    "boardHalfExtents": [
+      0.675,
+      0.45,
+      0.0215
+    ],
+    "base": {
+      "center": [
+        2.7,
+        0.07,
+        -2.87
+      ],
+      "radius": 0.375,
+      "height": 0.12
+    },
+    "upright": {
+      "center": [
+        2.7,
+        1.76,
+        -2.82
+      ],
+      "halfExtents": [
+        0.0525,
+        1.735,
+        0.0525
+      ]
+    }
+  },
+  "ball": {
+    "mesh": "Basketball",
+    "radius": 0.12,
+    "separateFile": "ball.glb"
+  },
+  "character": {
+    "workingRoot": [
+      -2,
+      0,
+      0
+    ],
+    "readyRoot": [
+      0.7,
+      0,
+      0.5
+    ],
+    "height": 1.8
+  },
+  "sourceLicense": {
+    "author": "Original project-authored models and generated mathematical texture, created locally in Blender for Jamiyan Batnyam portfolio prototype",
+    "externalAssets": []
+  },
+  "room": {
+    "x": [
+      -5,
+      5
+    ],
+    "z": [
+      -4,
+      3.5
+    ],
+    "height": 5,
+    "cutaway": "Side/front panels omitted from V8 export; continuous rear cyclorama retained. Runtime routing excludes rear floor cove."
+  },
+  "notes": [
+    "Chair seat top is 0.5425m; retargeted seated pelvis must align with this surface.",
+    "Laptop screen is a separately named, UV mapped mesh for runtime project screenshots.",
+    "No character is included. Runtime lighting and physics colliders are separate.",
+    "Static export geometry is batched by material; individual editable parts are retained in studio-source.blend."
+  ],
+  "plant": {
+    "potCenter": [
+      4.17,
+      0.285,
+      -2.25
+    ],
+    "radius": 0.37,
+    "height": 0.57
+  }
+}

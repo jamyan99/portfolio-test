@@ -1,0 +1,142 @@
+.constellations-v2 {background:#050B18;overflow-x:clip;transition:none;}
+.constellations-v2 main {position:relative;}
+.constellations-v2 .stage {background:#050B18;pointer-events:none;}
+.constellations-v2 .stage::after {background:radial-gradient(ellipse at 50% 12%,rgba(3,8,20,.45),transparent 70%),linear-gradient(180deg,rgba(3,8,20,.15),rgba(3,8,20,.08) 60%,rgba(3,8,20,.35));opacity:var(--night,1);}
+.constellations-v2 .aurora-hero {--hero-ink:#EFF3F7;--hero-muted:#B5C6D4;--hero-line:rgba(200,224,242,.23);height:auto;min-height:100svh;padding:24px clamp(24px,5vw,80px) 26px;color:var(--hero-ink);display:flex;flex-direction:column;pointer-events:auto;}
+.constellations-v2 .aurora-hero.a-daylight {--hero-ink:#17252A;--hero-muted:#3C5059;--hero-line:rgba(23,37,42,.3);}
+.focus-header {display:flex;align-items:center;gap:44px;min-height:48px;position:relative;z-index:6;}
+.focus-signature {margin-right:auto;text-decoration:none;font:650 19px/1.25 var(--display);letter-spacing:-.025em;}
+.focus-signature span {display:block;margin-top:4px;color:var(--hero-muted);font:450 10px/1.5 var(--body);letter-spacing:.055em;}
+.focus-header nav {display:flex;gap:28px;}
+.focus-header nav a {display:flex;align-items:center;min-height:44px;text-decoration:none;font:550 12px/1.5 var(--body);}
+.focus-header nav a:hover,.focus-hero-footer a:hover {text-decoration:underline;text-underline-offset:5px;}
+.focus-motion {min-height:44px;padding:8px 16px;border:1px solid var(--hero-line);border-radius:999px;background:transparent;color:var(--hero-ink);font:500 11px/1 var(--body);cursor:pointer;}
+.focus-motion:disabled {cursor:default;}
+.focus-copy {position:relative;z-index:2;text-align:center;margin:clamp(28px,4vh,52px) auto 0;max-width:1000px;}
+.focus-eyebrow {margin:0 0 15px;color:var(--hero-muted);font:550 10px/1.5 var(--body);letter-spacing:.14em;text-transform:uppercase;}
+.focus-copy h1 {margin:0;font:500 clamp(48px,5.5vw,84px)/1.04 var(--display);letter-spacing:-.045em;}
+.focus-copy h1 em {font-style:normal;color:#CCDDEC;}
+.a-daylight .focus-copy h1 em {color:#344F5B;}
+.focus-intro {margin:15px auto 0;max-width:58ch;color:var(--hero-muted);font:400 14px/1.8 var(--body);}
+.constellation-experience {position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding-top:12px;user-select:none;-webkit-user-select:none;}
+.constellation-map {position:relative;width:min(64vw,57vh,660px);height:min(64vw,57vh,660px);margin:0 auto;isolation:isolate;}
+.constellation-lines {position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;stroke:#A7C9E0;stroke-width:1.1;stroke-opacity:.5;stroke-linejoin:round;vector-effect:non-scaling-stroke;}
+.constellation-lines polyline {vector-effect:non-scaling-stroke;}
+.constellation-body {stroke-dasharray:1;animation:trace-scorpius 1.3s cubic-bezier(.22,1,.36,1) both;}
+.constellation-branch {opacity:.65;}
+.constellation-point {position:absolute;width:var(--point-size,3px);height:var(--point-size,3px);transform:translate(-50%,-50%);border-radius:50%;background:#E8F3FF;box-shadow:0 0 8px 2px rgba(158,210,249,.35);pointer-events:none;}
+.project-slot {position:absolute;width:0;height:0;z-index:3;}
+.project-slot.is-open {z-index:10;}
+.project-star {position:absolute;left:-24px;top:-24px;width:48px;height:48px;display:grid;place-items:center;outline:none;text-decoration:none;border-radius:50%;-webkit-tap-highlight-color:transparent;}
+.project-star__light {position:relative;width:12px;height:12px;border-radius:50%;background:#F3F9FF;box-shadow:0 0 9px 3px rgba(196,228,255,.7),0 0 30px 8px rgba(122,188,224,.19);transform:scale(1);transition:transform 200ms cubic-bezier(.22,1,.36,1),box-shadow 200ms ease;}
+.project-star__light::before,.project-star__light::after {content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#EBF6FF;border-radius:50%;}
+.project-star__light::before {width:26px;height:2px;}
+.project-star__light::after {width:2px;height:26px;}
+.project-star__name {position:absolute;left:46px;top:50%;transform:translateY(-50%);white-space:nowrap;color:var(--hero-ink);font:550 13px/1.4 var(--body);text-shadow:0 1px 12px #050B18;}
+.project-slot--left .project-star__name {left:auto;right:46px;}
+.project-star:focus-visible {outline:2px solid #D8EFFF;outline-offset:4px;}
+.project-star:hover .project-star__light,.project-star:focus-visible .project-star__light,.project-slot.is-open .project-star__light {transform:scale(1.22);box-shadow:0 0 13px 5px rgba(224,244,255,.85),0 0 40px 13px rgba(139,218,235,.3);}
+.project-peek {position:fixed;left:18px;top:18px;width:278px;opacity:0;visibility:hidden;pointer-events:none;transform:scale(.97) translateY(5px);transition:opacity 200ms ease,transform 240ms cubic-bezier(.22,1,.36,1),visibility 0s linear 240ms;filter:drop-shadow(0 14px 28px rgba(0,0,0,.4));}
+.project-slot.is-open .project-peek {opacity:1;visibility:visible;pointer-events:auto;transform:scale(1) translateY(0);transition-delay:0s;}
+.project-peek__link {display:block;overflow:hidden;border-radius:10px;background:#F2F3F3;color:#14202C;text-decoration:none;box-shadow:0 0 0 1px rgba(210,230,245,.4);}
+.project-peek__image {height:184px;display:grid;place-items:center;overflow:hidden;background:#E8E9EE;}
+.project-peek__image img {display:block;width:100%;height:100%;object-fit:cover;}
+[data-project="finra"] .project-peek__image img {height:auto;object-fit:contain;}
+.project-peek__copy {padding:14px 17px 15px;}
+.project-peek__copy p {margin:0 0 5px;font:550 9px/1.5 var(--body);color:#5B6472;}
+.project-peek__copy h2 {margin:0;font:650 22px/1.1 var(--display);letter-spacing:-.025em;}
+.project-peek__copy > span {display:flex;align-items:center;justify-content:space-between;margin-top:10px;min-height:32px;font:650 11px/1.4 var(--body);}
+.project-peek__copy > span > span {font-size:19px;}
+.project-peek__close {position:absolute;top:5px;right:5px;z-index:2;width:44px;height:44px;border:0;border-radius:50%;background:#F4F5F5;color:#152333;font:400 24px/1 var(--body);cursor:pointer;}
+.project-peek__link:focus-visible,.project-peek__close:focus-visible {outline:2px solid #142B3C;outline-offset:3px;}
+.constellation-caption {display:flex;align-items:center;justify-content:space-between;gap:24px;width:min(100%,900px);margin:14px auto 0;color:var(--hero-muted);font:450 10px/1.5 var(--body);}
+.constellation-caption p {margin:0;}
+.constellation-caption p:first-child {color:var(--hero-ink);font-weight:650;}
+.constellation-caption p:first-child span {font-weight:400;color:var(--hero-muted);}
+.focus-hero-footer {display:flex;align-items:center;justify-content:space-between;gap:30px;border-top:1px solid var(--hero-line);padding-top:15px;margin:28px 0 56px;color:var(--hero-muted);font:450 9px/1.7 var(--body);}
+.focus-hero-footer p {margin:0;}
+.focus-hero-footer > div {display:flex;align-items:center;gap:28px;}
+.focus-hero-footer a {display:inline-flex;align-items:center;gap:12px;min-height:44px;color:var(--hero-ink);text-decoration:none;font-size:11px;}
+.constellations-v2 .aurora-after::before {height:80px;opacity:var(--handoff,0);}
+.focus-static .aurora-after::before {opacity:1;}
+.focus-static .constellation-body {animation:none;stroke-dashoffset:0;opacity:1;}
+.aurora-hero[data-reduced-motion="true"] .constellation-body {animation:none;stroke-dashoffset:0;opacity:1;}
+.focus-lab {display:flex;align-items:center;gap:26px;padding:14px clamp(24px,5vw,80px);position:relative;z-index:12;background:#ECEBE7;color:#444C55;font:500 11px/1.5 var(--body);}
+.focus-lab > span {margin-right:auto;}
+.focus-lab a {display:inline-flex;align-items:center;min-height:44px;text-decoration:none;}
+.focus-lab a:hover {text-decoration:underline;}
+.focus-sr {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.focus-skip {position:fixed;z-index:100;left:20px;top:12px;transform:translateY(-160%);background:#F3F2EE;color:#17252A;padding:12px 20px;border-radius:4px;font:650 13px/1.5 var(--body);}
+.focus-skip:focus {transform:translateY(0);}
+.focus-header a:focus-visible,.focus-motion:focus-visible,.focus-hero-footer a:focus-visible {outline:2px solid var(--hero-ink);outline-offset:5px;}
+.focus-lab a:focus-visible {outline:2px solid #A62D05;outline-offset:5px;}
+.focus-noscript {position:relative;z-index:20;padding:40px;background:#F8F7F4;color:#111216;}
+.aurora-hero[data-motion="paused"] .constellation-body {animation-play-state:paused;}
+.aurora-hero[data-motion="paused"] .project-peek,.aurora-hero[data-motion="paused"] .project-star__light {transition:none;}
+@keyframes trace-scorpius {from {stroke-dashoffset:1;opacity:.15;} to {stroke-dashoffset:0;opacity:1;}}
+@media (max-width:900px) {
+  .focus-header {gap:25px;}
+  .focus-header nav {gap:22px;}
+  .focus-hero-footer {align-items:flex-start;}
+  .focus-hero-footer > div {gap:20px;flex-wrap:wrap;}
+}
+@media (max-width:760px) {
+  .constellations-v2 .aurora-hero {padding:18px 24px 22px;}
+  .focus-header {gap:14px;flex-wrap:wrap;}
+  .focus-signature {font-size:17px;}
+  .focus-signature span {font-size:9px;}
+  .focus-header nav {order:3;width:100%;gap:27px;padding-top:7px;border-bottom:1px solid var(--hero-line);}
+  .focus-header nav a {font-size:11px;}
+  .focus-motion {padding-inline:12px;font-size:10px;}
+  .focus-copy {margin-top:30px;text-align:left;}
+  .focus-eyebrow {font-size:9px;margin-bottom:14px;}
+  .focus-copy h1 {font-size:clamp(44px,9vw,64px);max-width:10ch;}
+  .focus-intro {font-size:13px;max-width:35ch;margin-top:17px;}
+  .constellation-experience {padding-top:32px;}
+  .constellation-map {width:calc(100vw - 92px);height:calc(100vw - 92px);max-width:470px;max-height:470px;margin-inline:auto;}
+  .project-star__name {font-size:11px;}
+  .project-star__light {width:10px;height:10px;}
+  .project-star__light::before {width:23px;}
+  .project-star__light::after {height:23px;}
+  .project-peek {width:min(278px,calc(100vw - 36px));}
+  .constellation-caption {display:block;margin-top:24px;font-size:9px;}
+  .constellation-caption p + p {margin-top:8px;}
+  .focus-hero-footer {display:block;margin-top:24px;font-size:9px;margin-bottom:56px;}
+  .focus-hero-footer > div {display:flex;gap:0 22px;margin-top:10px;}
+  .focus-hero-footer a {font-size:10px;gap:10px;}
+  .focus-lab {flex-wrap:wrap;padding:16px 24px;gap:0 22px;font-size:10px;}
+  .focus-lab > span {width:100%;}
+}
+@media (max-width:380px) {
+  .constellations-v2 .aurora-hero {padding-inline:20px;}
+  .focus-copy h1 {font-size:44px;}
+  .constellation-map {width:calc(100vw - 72px);height:calc(100vw - 72px);}
+  .project-star__name {font-size:10px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .constellation-body {animation:none;stroke-dashoffset:0;}
+  .project-star__light,.project-peek,.focus-skip {transition:none;animation:none;}
+}
+
+.celestial-home .celestial-hero {--hero-ink:#EFF3F7;--hero-muted:#B5C6D4;--hero-line:#335064;display:flex;flex-direction:column;min-height:100svh;padding:calc(var(--site-header-h) + 24px) max(24px,calc((100% - 1192px)/2)) 28px;color:var(--hero-ink);position:relative;}
+.celestial-home .focus-copy {margin-top:clamp(12px,3vh,36px);}
+.celestial-home .focus-copy h1 {font-size:clamp(48px,5.5vw,80px);}
+.celestial-home .constellation-map {width:min(62vw,51vh,620px);height:min(62vw,51vh,620px);}
+.celestial-home .focus-hero-footer {margin-bottom:0;}
+.celestial-home .constellation-experience {padding-top:20px;}
+.celestial-home .project-peek {z-index:25;}
+.celestial-home .project-peek__link {background:#102337;color:#EEF3F8;box-shadow:0 0 0 1px #3C5970;}
+.celestial-home .project-peek__copy p {color:#B4C7D7;}
+.celestial-home .project-peek__close {background:#102337;color:#EEF3F8;}
+.celestial-home .project-peek__link:focus-visible,.celestial-home .project-peek__close:focus-visible {outline-color:#A0E6D9;}
+.celestial-home[data-reduced-motion="true"] .constellation-body {animation:none;stroke-dashoffset:0;}
+.celestial-home[data-motion="paused"] .constellation-body {animation-play-state:paused;}
+@media(max-width:760px) {
+ .celestial-home .celestial-hero {padding:calc(var(--site-header-h) + 24px) 24px 24px;}
+ .celestial-home .focus-copy {margin:12px 0 0;text-align:left;}
+ .celestial-home .focus-copy h1 {font-size:clamp(44px,9vw,64px);}
+ .celestial-home .constellation-map {width:calc(100vw - 92px);height:calc(100vw - 92px);max-width:470px;max-height:470px;}
+ .celestial-home .constellation-experience {padding-top:35px;}
+ .celestial-home .focus-hero-footer {margin-bottom:0;}
+}
+@media(max-width:380px) {.celestial-home .constellation-map {width:calc(100vw - 72px);height:calc(100vw - 72px);}}

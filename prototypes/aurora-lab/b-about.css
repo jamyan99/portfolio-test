@@ -1,0 +1,137 @@
+/* The frozen lake's About room (b-about.js): the north shore, with the panels lying in the snow.
+   The pan, the shore's snow and the ice tiles are shared with the project rooms (b-rooms.css). */
+
+/* The way in: the About photo in the snow at the lake's corner. */
+.lake-about {position:absolute;z-index:12;left:clamp(16px,5vw,72px);top:16px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:#F3F2EE;text-decoration:none;transform:rotate(-5deg);transition:transform var(--mo-mid) var(--mo-ease),scale var(--mo-fast) var(--mo-ease),opacity var(--mo-mid) var(--mo-ease);}
+.lake-about__photo {position:relative;display:block;width:60px;height:75px;padding:4px;border-radius:12px;background:rgba(190,220,245,.16);
+  box-shadow:inset 0 0 0 1px rgba(220,240,255,.32),0 10px 24px rgba(2,6,14,.45);backdrop-filter:blur(6px);}
+.lake-about__photo img {display:block;width:100%;height:100%;border-radius:8px;object-fit:cover;object-position:50% 30%;}
+.lake-about__photo::before {content:"";position:absolute;z-index:1;left:5px;right:12px;top:-4px;height:8px;border-radius:8px 10px 4px 4px;
+  background:linear-gradient(#F6FAFD,#DCE7F2);box-shadow:0 2px 3px rgba(10,20,40,.3);}
+.lake-about__label {font:700 11px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 8px rgba(2,6,14,.9);}
+.lake-about:focus-visible {transform:rotate(0) translateY(-2px) scale(1.04);}
+@media (hover:hover) {.lake-about:hover {transform:rotate(0) translateY(-2px) scale(1.04);}}
+.lake-about:focus-visible {outline:none;}
+.lake-about:focus-visible .lake-about__photo {outline:2px solid #FFD7BF;outline-offset:4px;}
+
+/* The shore comes down from above as the lake goes down. */
+.lake-room__field {position:absolute;left:0;right:0;top:0;height:calc(var(--lake-pan) + 56px);
+  transform:translateY(calc(-1 * var(--lake-pan)));transition:transform var(--mo-travel) var(--mo-ease-move);
+  -webkit-mask-image:linear-gradient(#000 calc(100% - 56px),transparent);mask-image:linear-gradient(#000 calc(100% - 56px),transparent);}
+html[data-room="north"] .lake-room__field {transform:none;}
+
+/* The strip of panels. */
+.room-track {--room-h:calc(var(--lake-pan) - 72px);position:absolute;left:0;right:0;top:0;height:var(--lake-pan);display:flex;align-items:stretch;
+  gap:clamp(48px,5vw,80px);padding:44px clamp(24px,5vw,80px) 28px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior:contain;outline:none;}
+.room-track::-webkit-scrollbar {display:none;}
+.room-track::after {content:"";flex:0 0 1px;}
+.room-panel {position:relative;z-index:1;flex:none;display:flex;flex-direction:column;min-height:0;}
+
+.room-eyebrow {margin:0 0 14px;color:var(--muted);font:600 11px/1.4 var(--body);letter-spacing:.12em;text-transform:uppercase;}
+.room-panel h2,.room-panel h3:not(.room-label) {margin:0;font:500 clamp(36px,3.6vw,56px)/1.04 var(--display);letter-spacing:-.045em;text-shadow:0 2px 18px rgba(8,14,26,.35);}
+#room-title {outline:none;} /* (focused on arrival, so screen readers start here; not a control) */
+.room-panel h2 em {font-style:normal;color:#CFE0EE;}
+.room-dot {color:var(--flame);}
+.room-intro p,.room-outside p {color:var(--muted);font:400 15px/1.75 var(--body);}
+
+.room-me {width:min(calc(var(--room-h) * .8),520px);}
+.room-well {flex:1;min-height:0;margin:0;padding:12px;border-radius:28px;}
+.room-well::before {--cap-x:26px;--cap-w:58%;top:-7px;height:13px;}
+.room-well > span {position:relative;display:block;height:100%;border-radius:18px;overflow:hidden;}
+.room-well img {display:block;width:100%;height:100%;object-fit:cover;object-position:50% 30%;}
+.room-well > span::after {content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),inset 0 -40px 60px -30px rgba(10,18,32,.5);}
+
+.room-intro {width:min(440px,80vw);justify-content:space-between;}
+.room-intro p {margin:0 0 14px;max-width:44ch;}
+
+.room-connect {width:400px;}
+.room-label {display:flex;align-items:center;gap:10px;margin:0 0 14px;color:var(--ink);font:650 12px/1.4 var(--body);letter-spacing:.02em;}
+.room-label::before {content:"";width:7px;height:7px;border-radius:50%;background:var(--warm);box-shadow:0 0 10px 2px rgba(255,138,76,.55);}
+.room-card {display:flex;flex-direction:column;justify-content:flex-end;gap:4px;padding:18px 20px;border-radius:16px;color:inherit;text-decoration:none;
+  transition:transform var(--mo-fast) var(--mo-ease),scale var(--mo-fast) var(--mo-ease),border-color var(--mo-fast) var(--mo-ease),background-color var(--mo-fast) var(--mo-ease);}
+.room-card b {font:650 16px/1.3 var(--body);}
+.room-card span {color:var(--muted);font:500 13px/1.4 var(--body);overflow-wrap:anywhere;}
+.room-card .room-icon {position:absolute;right:16px;top:16px;color:var(--warm);}
+.room-card:focus-visible {transform:translateY(-2px);border-color:var(--tile-hi);background-color:rgba(185,215,240,.16);}
+@media (hover:hover) {.room-card:hover {transform:translateY(-2px);border-color:var(--tile-hi);background-color:rgba(185,215,240,.16);}}
+.room-card:focus-visible,.room-link:focus-visible,.room-back:focus-visible,.room-stop:focus-visible {outline:2px solid #FFD7BF;outline-offset:3px;}
+.room-card--wide {flex-direction:row;justify-content:flex-start;align-items:baseline;gap:12px;margin-bottom:14px;padding:20px;}
+.room-cards {flex:1;min-height:110px;max-height:240px;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;}
+.room-facts {display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin:0;}
+.room-facts dt {color:var(--muted);font:600 10px/1.5 var(--body);letter-spacing:.1em;text-transform:uppercase;}
+.room-facts dd {margin:4px 0 0;font:550 14px/1.45 var(--body);}
+
+/* The journey: a warm line melts its way along the years; each year's mark is frosted until the
+   line reaches it, then glows like the flame. */
+.room-journey {gap:28px;}
+.room-years {--line:0;position:relative;flex:1;min-height:0;display:flex;margin:0;padding:0;list-style:none;}
+.room-years::before,.room-years::after {content:"";position:absolute;left:0;right:48px;top:6px;height:2px;border-radius:2px;}
+.room-years::before {background:rgba(210,235,255,.22);}
+.room-years::after {background:linear-gradient(90deg,var(--flame),var(--warm));transform-origin:left;transform:scaleX(var(--line));box-shadow:0 0 12px rgba(255,138,76,.7);}
+.room-year {position:relative;flex:none;display:flex;flex-direction:column;padding-right:48px;}
+.room-year__head {display:flex;align-items:baseline;gap:12px;padding-top:30px;margin-bottom:18px;}
+.room-mark {position:absolute;left:0;top:0;width:14px;height:14px;border-radius:50%;background:#C9DCEC;border:2px solid #F2F7FB;
+  box-shadow:0 0 0 3px rgba(210,235,255,.14);transition:background-color var(--mo-mid) var(--mo-ease),border-color var(--mo-mid) var(--mo-ease),box-shadow var(--mo-mid) var(--mo-ease);}
+.room-year.is-lit .room-mark {background:var(--flame);border-color:#FFE2CF;box-shadow:0 0 10px 3px rgba(255,138,76,.65),0 0 26px 8px rgba(255,138,76,.22);}
+.room-year h4 {margin:0;font:500 28px/1 var(--display);letter-spacing:-.03em;}
+.room-badge {padding:4px 9px;border:1px solid var(--tile-line);border-radius:999px;color:var(--muted);font:600 10px/1.2 var(--body);letter-spacing:.04em;white-space:nowrap;}
+.room-events {display:grid;grid-auto-flow:column;grid-auto-columns:290px;grid-template-rows:auto;gap:16px 14px;margin:0;padding:0;list-style:none;align-items:start;}
+.room-events--two {grid-template-rows:auto auto;}
+.room-event {padding:18px 20px;border-radius:16px;}
+.room-event--next {border-color:rgba(255,179,143,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 18px 40px rgba(8,14,26,.38),0 0 34px rgba(255,138,76,.14);}
+.room-event p {margin:0;}
+.room-event__when {color:var(--muted);font:600 10px/1.5 var(--body);letter-spacing:.1em;text-transform:uppercase;}
+.room-event .room-event__title {margin-top:6px;color:var(--ink);font:650 16px/1.35 var(--body);}
+.room-event .room-event__body {margin-top:8px;color:var(--muted);font:450 13.5px/1.6 var(--body);}
+.room-event__stats {display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0;padding:0;list-style:none;}
+.room-event__stats li {padding:4px 9px;border-radius:999px;background:rgba(210,235,255,.1);color:var(--ink);font:550 11px/1.3 var(--body);}
+.room-link {display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-top:4px;color:var(--warm);text-decoration:none;font:650 13px/1 var(--body);}
+.room-link:hover span {text-decoration:underline;text-underline-offset:4px;}
+
+.room-outside {width:min(520px,80vw);justify-content:space-between;}
+.room-outside p {margin:0 0 14px;max-width:52ch;}
+
+/* The dock, over the strip of lake left at the bottom. */
+.lake-room__dock {position:absolute;left:0;right:0;bottom:0;height:var(--lake-dock);display:flex;align-items:center;gap:clamp(24px,4vw,56px);
+  padding:20px clamp(24px,5vw,80px) 0;background:linear-gradient(to top,rgba(3,7,14,.6),rgba(3,7,14,.2) 70%,transparent);
+  opacity:0;transform:translateY(8px);transition:opacity var(--mo-mid) var(--mo-ease),transform var(--mo-mid) var(--mo-ease);}
+/* (it arrives as the camera is settling, not after it has stopped) */
+html[data-room="north"] .lake-room__dock {opacity:1;transform:none;transition-delay:calc(var(--mo-travel) * .6);}
+.room-back {display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:8px 18px 8px 14px;border:1px solid rgba(225,242,255,.32);border-radius:999px;
+  background:rgba(8,14,26,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--ink);font:650 12px/1 var(--body);cursor:pointer;white-space:nowrap;transition:border-color var(--mo-fast) var(--mo-ease),scale var(--mo-fast) var(--mo-ease);}
+.room-back:hover {border-color:rgba(255,179,143,.7);}
+.room-stops {position:relative;flex:1;display:flex;justify-content:space-between;}
+.room-stops__line {position:absolute;left:0;right:0;top:15px;height:1px;background:rgba(210,235,255,.3);}
+.room-stops__line span {display:block;height:100%;background:linear-gradient(90deg,var(--flame),var(--warm));transform-origin:left;transform:scaleX(var(--room-p,0));}
+.room-stop {position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:44px;min-height:44px;padding:10px 0 0;border:0;background:none;
+  color:var(--muted);font:600 11px/1 var(--body);cursor:pointer;transition:color var(--mo-fast) var(--mo-ease),scale var(--mo-fast) var(--mo-ease);}
+.room-stop:first-of-type {align-items:flex-start;}
+.room-stop:last-of-type {align-items:flex-end;}
+.room-stop__dot {width:9px;height:9px;border-radius:50%;background:#1A2434;border:1px solid rgba(210,235,255,.6);transition:background-color var(--mo-fast) var(--mo-ease),box-shadow var(--mo-fast) var(--mo-ease);}
+.room-stop:hover,.room-stop.is-current {color:var(--ink);}
+.room-stop.is-current .room-stop__dot {background:var(--warm);border-color:#FFE2CF;box-shadow:0 0 8px 2px rgba(255,138,76,.6);}
+
+@media (max-height:960px) {
+  .room-events--two {grid-template-rows:auto;}
+}
+/* Phones (and very short windows): the shore scrolls down instead of sideways. */
+@media (max-width:760px),(max-height:559px) {
+  .lake-about {left:auto;right:14px;top:10px;}
+  .lake-about__photo {width:46px;height:58px;}
+  .room-track {flex-direction:column;gap:48px;padding:28px 20px 40px;overflow-x:hidden;overflow-y:auto;}
+  .room-track::after {display:none;}
+  .room-me,.room-intro,.room-connect,.room-outside {width:auto;}
+  .room-me {max-width:380px;}
+  .room-well {flex:none;aspect-ratio:4/5;}
+  .room-intro,.room-outside {gap:22px;}
+  .room-years {flex-direction:column;padding-left:30px;gap:28px;}
+  .room-years::before,.room-years::after {left:6px;right:auto;top:6px;bottom:0;width:2px;height:auto;}
+  .room-years::after {transform-origin:top;transform:scaleY(var(--line));}
+  .room-year {padding-right:0;}
+  .room-year__head {padding-top:0;}
+  .room-mark {left:-30px;top:4px;}
+  .room-events,.room-events--two {grid-auto-flow:row;grid-auto-columns:auto;grid-template-rows:none;}
+  .lake-room__dock {padding:16px 20px 0;}
+  .room-stops {display:none;}
+}
